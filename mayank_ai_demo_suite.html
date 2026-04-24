@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mayank's AI Demo Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0f0e;
+  --card: #111918;
+  --border: rgba(255,255,255,0.07);
+  --text: #e8f0ee;
+  --muted: #6b8a85;
+  --accent: #00c9a7;
+  --accent2: #e0a847;
+  --white: #ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── SELECTOR SCREEN ── */
+#selector{min-height:100vh;padding:32px 20px 60px;display:flex;flex-direction:column;align-items:center;}
+.sel-header{text-align:center;margin-bottom:36px;}
+.sel-badge{display:inline-block;background:rgba(0,201,167,0.12);border:1px solid rgba(0,201,167,0.3);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:1px;padding:5px 14px;border-radius:20px;margin-bottom:16px;}
+.sel-title{font-family:'Syne',sans-serif;font-size:clamp(26px,5vw,42px);font-weight:800;line-height:1.1;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#a8e0d8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sel-sub{font-size:14px;color:var(--muted);}
+
+.cat-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin:28px 0 12px;width:100%;max-width:780px;}
+.biz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;width:100%;max-width:780px;margin-bottom:4px;}
+
+.biz-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;cursor:pointer;transition:all 0.22s;position:relative;overflow:hidden;}
+.biz-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,201,167,0.08),transparent);opacity:0;transition:opacity 0.22s;}
+.biz-card:hover{border-color:rgba(0,201,167,0.4);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,201,167,0.1);}
+.biz-card:hover::before{opacity:1;}
+.biz-icon{font-size:30px;margin-bottom:10px;}
+.biz-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;line-height:1.2;}
+.biz-type{font-size:11px;color:var(--accent);font-weight:600;margin-bottom:6px;}
+.biz-rating{font-size:11px;color:var(--muted);}
+.biz-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;opacity:0.3;transition:all 0.2s;}
+.biz-card:hover .biz-arrow{opacity:1;right:10px;}
+
+/* ── DEMO SCREEN ── */
+#demo{display:none;flex-direction:column;min-height:100vh;}
+
+.topbar{background:#0d1a18;border-bottom:1px solid var(--border);padding:0 18px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.tb-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;}
+.tb-sub{font-size:10px;color:var(--muted);margin-top:1px;}
+.tb-back{background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.tb-back:hover{color:white;border-color:rgba(255,255,255,0.2);}
+.tb-live{display:flex;align-items:center;gap:5px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:#4ade80;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;}
+.live-dot{width:5px;height:5px;background:#22c55e;border-radius:50%;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.bottom-nav{background:#0d1a18;border-top:1px solid var(--border);display:flex;position:fixed;bottom:0;left:0;right:0;z-index:100;}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,0.3);font-family:'DM Sans',sans-serif;transition:color 0.2s;}
+.bn.active{color:var(--accent);}
+.bn-i{font-size:18px;margin-bottom:2px;}
+.bn-l{font-size:9px;font-weight:600;}
+
+.page{display:none;padding:18px 16px 90px;max-width:480px;margin:0 auto;width:100%;}
+.page.active{display:block;animation:fadeUp 0.25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* HERO */
+.hero{border-radius:18px;padding:26px 20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.hero::after{position:absolute;right:16px;bottom:8px;font-size:70px;opacity:0.07;}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(224,168,71,0.15);border:1px solid rgba(224,168,71,0.3);color:var(--accent2);padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.5px;margin-bottom:12px;}
+.hero h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:white;line-height:1.2;margin-bottom:7px;}
+.hero p{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.5;margin-bottom:18px;}
+.hero-stats{display:flex;border-top:1px solid rgba(255,255,255,0.07);padding-top:14px;gap:0;}
+.hstat{flex:1;text-align:center;border-right:1px solid rgba(255,255,255,0.07);}
+.hstat:last-child{border:none;}
+.hstat h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:white;}
+.hstat p{font-size:9px;color:rgba(255,255,255,0.35);margin-top:2px;}
+
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.feat{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all 0.2s;text-align:center;}
+.feat:hover{border-color:rgba(0,201,167,0.4);background:rgba(0,201,167,0.05);}
+.feat-i{font-size:24px;margin-bottom:6px;}
+.feat-n{font-size:11px;font-weight:700;color:var(--white);font-family:'Syne',sans-serif;}
+.feat-d{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.4;}
+
+.info-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.ic-label{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:3px;}
+.ic-val{font-size:13px;font-weight:600;color:var(--text);}
+
+.sec-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin:18px 0 10px;}
+
+/* WA */
+.wa-wrap{border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+.wa-head{background:#075E54;padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.wa-av{width:34px;height:34px;background:#128C7E;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.wa-nm{font-size:13px;font-weight:700;color:white;}
+.wa-st{font-size:10px;color:rgba(255,255,255,0.55);display:flex;align-items:center;gap:4px;}
+.wa-dot{width:5px;height:5px;background:#4ade80;border-radius:50%;}
+.wa-body{background:#ECE5DD;padding:14px 10px;min-height:300px;display:flex;flex-direction:column;gap:8px;}
+.wa-msg{display:flex;flex-direction:column;max-width:82%;}
+.wa-msg.bot{align-self:flex-start;}
+.wa-msg.user{align-self:flex-end;}
+.wa-bub{padding:9px 12px;border-radius:10px;font-size:12.5px;line-height:1.5;}
+.wa-msg.bot .wa-bub{background:white;border-radius:0 10px 10px 10px;color:#1a1a1a;}
+.wa-msg.user .wa-bub{background:#DCF8C6;border-radius:10px 0 10px 10px;color:#1a1a1a;}
+.wa-time{font-size:9px;color:rgba(0,0,0,0.35);margin-top:2px;align-self:flex-end;}
+.wa-msg.bot .wa-time{align-self:flex-start;}
+.wa-typing{display:flex;align-items:center;gap:3px;padding:9px 12px;background:white;border-radius:0 10px 10px 10px;width:fit-content;}
+.wa-typing span{width:5px;height:5px;background:#aaa;border-radius:50%;animation:typ 1.2s infinite;}
+.wa-typing span:nth-child(2){animation-delay:0.2s;}
+.wa-typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes typ{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+.wa-qrs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+.wa-qr{background:white;border:1.5px solid #25D366;color:#075E54;font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+.wa-qr:hover{background:#25D366;color:white;}
+.wa-inp-row{display:flex;gap:8px;align-items:center;}
+.wa-inp{flex:1;background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:20px;padding:9px 14px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;color:var(--text);}
+.wa-inp:focus{border-color:#25D366;}
+.wa-send{width:38px;height:38px;background:#25D366;border:none;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+
+/* VOICE */
+.voice-panel{background:linear-gradient(145deg,#0b1a18,#0f2d28);border-radius:18px;padding:28px 20px;text-align:center;margin-bottom:14px;}
+.v-ring{width:110px;height:110px;border-radius:50%;background:rgba(0,201,167,0.1);border:2px solid rgba(0,201,167,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;cursor:pointer;transition:all 0.3s;position:relative;}
+.v-ring.ringing{animation:vring 1s infinite;border-color:var(--accent);}
+.v-ring.active{background:rgba(0,201,167,0.2);border-color:var(--accent);}
+@keyframes vring{0%,100%{box-shadow:0 0 0 0 rgba(0,201,167,0.4)}50%{box-shadow:0 0 0 18px rgba(0,201,167,0)}}
+.v-inner{width:72px;height:72px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;}
+.v-status{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:white;margin-bottom:6px;}
+.v-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;line-height:1.5;}
+.v-btn{background:var(--accent);color:#0a0f0e;border:none;padding:11px 26px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all 0.2s;}
+.v-btn.end{background:#ef4444;color:white;}
+.transcript{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;display:none;}
+.tr-title{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;margin-bottom:10px;text-transform:uppercase;}
+.tr-line{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;}
+.tr-who{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;margin-top:2px;}
+.tr-who.ai{background:rgba(0,201,167,0.15);color:var(--accent);}
+.tr-who.caller{background:rgba(224,168,71,0.15);color:var(--accent2);}
+.tr-text{font-size:12px;color:var(--text);line-height:1.5;}
+.vf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.vf{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;}
+.vf-i{font-size:20px;margin-bottom:5px;}
+.vf-t{font-size:11px;font-weight:700;color:var(--text);}
+.vf-d{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* SERVICES */
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.svc{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;transition:all 0.2s;cursor:pointer;}
+.svc:hover{border-color:rgba(0,201,167,0.4);}
+.svc-i{font-size:24px;margin-bottom:6px;}
+.svc-n{font-size:12px;font-weight:700;color:var(--white);}
+.svc-p{font-size:11px;color:var(--accent);font-weight:600;margin-top:3px;}
+
+/* DASHBOARD */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.ds{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.ds-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--white);}
+.ds-lbl{font-size:10px;color:var(--muted);margin-top:3px;}
+.ds-chg{font-size:10px;color:#22c55e;font-weight:600;margin-top:3px;}
+.af{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);}
+.af:last-child{border:none;}
+.af-dot{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.af-info h4{font-size:12px;font-weight:600;color:var(--text);}
+.af-info p{font-size:10px;color:var(--muted);margin-top:1px;}
+.af-time{font-size:9px;color:var(--muted);margin-left:auto;flex-shrink:0;}
+
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(60px);background:#1a2e2a;border:1px solid var(--accent);color:var(--accent);padding:10px 20px;border-radius:10px;font-size:12px;font-weight:600;transition:transform 0.3s;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+@media(max-width:380px){.biz-grid{grid-template-columns:1fr 1fr;}.feat-grid,.dash-grid,.svc-grid,.vf-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ══ SELECTOR ══ -->
+<div id="selector">
+  <div class="sel-header">
+    <div class="sel-badge">⚡ MAYANK'S AI DEMO SUITE</div>
+    <div class="sel-title">Pick a Business<br>Launch the Demo</div>
+    <div class="sel-sub">12 businesses · 3 categories · fully customised</div>
+  </div>
+
+  <div class="cat-label">🦷 Dental Clinics</div>
+  <div class="biz-grid" id="grid-dental"></div>
+
+  <div class="cat-label">💇 Salons & Beauty</div>
+  <div class="biz-grid" id="grid-salon"></div>
+
+  <div class="cat-label">🍽️ Restaurants & Hotels</div>
+  <div class="biz-grid" id="grid-resto"></div>
+</div>
+
+<!-- ══ DEMO SHELL ══ -->
+<div id="demo">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-icon" id="tb-icon"></div>
+      <div>
+        <div class="tb-name" id="tb-name"></div>
+        <div class="tb-sub" id="tb-sub"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="tb-live"><div class="live-dot"></div> AI Active</div>
+      <button class="tb-back" onclick="backToSelector()">← Back</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="hero" id="demo-hero">
+      <div class="hero-badge" id="demo-badge"></div>
+      <h2 id="demo-title"></h2>
+      <p id="demo-desc"></p>
+      <div class="hero-stats">
+        <div class="hstat"><h3 id="stat1-val"></h3><p id="stat1-lbl"></p></div>
+        <div class="hstat"><h3 id="stat2-val"></h3><p id="stat2-lbl"></p></div>
+        <div class="hstat"><h3 id="stat3-val"></h3><p id="stat3-lbl"></p></div>
+      </div>
+    </div>
+    <div class="feat-grid">
+      <div class="feat" onclick="switchTab('whatsapp')"><div class="feat-i">💬</div><div class="feat-n">WhatsApp Bot</div><div class="feat-d">Auto-replies & booking 24/7</div></div>
+      <div class="feat" onclick="switchTab('voice')"><div class="feat-i">📞</div><div class="feat-n">Voice AI</div><div class="feat-d">Answers every call instantly</div></div>
+      <div class="feat" onclick="switchTab('services')"><div class="feat-i" id="svc-tab-icon">🛠️</div><div class="feat-n" id="svc-tab-name">Services</div><div class="feat-d" id="svc-tab-desc">Browse & book services</div></div>
+      <div class="feat" onclick="switchTab('dashboard')"><div class="feat-i">📊</div><div class="feat-n">Dashboard</div><div class="feat-d">Live activity & stats</div></div>
+    </div>
+    <div class="sec-label">Contact & Hours</div>
+    <div class="info-card"><div><div class="ic-label">Phone</div><div class="ic-val" id="info-phone"></div></div><span style="font-size:20px;">📞</span></div>
+    <div class="info-card"><div><div class="ic-label">Hours</div><div class="ic-val" id="info-hours"></div></div><span style="font-size:20px;">⏰</span></div>
+    <div class="info-card"><div><div class="ic-label">Address</div><div class="ic-val" id="info-addr"></div></div><span style="font-size:20px;">📍</span></div>
+  </div>
+
+  <!-- WHATSAPP -->
+  <div class="page" id="page-whatsapp">
+    <div class="sec-label" style="margin-top:0;">💬 AI WhatsApp Bot</div>
+    <div class="wa-wrap">
+      <div class="wa-head">
+        <div class="wa-av" id="wa-av"></div>
+        <div><div class="wa-nm" id="wa-nm"></div><div class="wa-st"><div class="wa-dot"></div> AI Online — Instant replies</div></div>
+      </div>
+      <div class="wa-body" id="wa-chat"></div>
+    </div>
+    <div class="wa-qrs" id="wa-qrs"></div>
+    <div class="wa-inp-row">
+      <input class="wa-inp" id="wa-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendWA()">
+      <button class="wa-send" onclick="sendWA()">➤</button>
+    </div>
+  </div>
+
+  <!-- VOICE -->
+  <div class="page" id="page-voice">
+    <div class="sec-label" style="margin-top:0;">📞 AI Voice Receptionist</div>
+    <div class="voice-panel">
+      <div class="v-ring" id="v-ring" onclick="toggleCall()"><div class="v-inner" id="v-inner">📞</div></div>
+      <div class="v-status" id="v-status">Tap to Simulate a Call</div>
+      <div class="v-sub" id="v-sub">The AI answers every call like a trained receptionist — even at 2am</div>
+      <button class="v-btn" id="v-btn" onclick="toggleCall()">📞 Simulate Incoming Call</button>
+    </div>
+    <div class="transcript" id="transcript">
+      <div class="tr-title">📝 Live Call Transcript</div>
+      <div id="tr-lines"></div>
+    </div>
+    <div class="sec-label">What the Voice AI Can Do</div>
+    <div class="vf-grid">
+      <div class="vf"><div class="vf-i">🗓️</div><div class="vf-t">Book Slots</div><div class="vf-d">Checks availability & confirms</div></div>
+      <div class="vf"><div class="vf-i">💰</div><div class="vf-t">Quote Prices</div><div class="vf-d">Answers cost questions instantly</div></div>
+      <div class="vf"><div class="vf-i">👤</div><div class="vf-t">Route to Staff</div><div class="vf-d">Connects to right person</div></div>
+      <div class="vf"><div class="vf-i">🌙</div><div class="vf-t">24/7 Coverage</div><div class="vf-d">Never misses a call</div></div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="page" id="page-services">
+    <div class="sec-label" style="margin-top:0;" id="svc-page-title">🛠️ Services & Pricing</div>
+    <div class="svc-grid" id="svc-grid"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="page" id="page-dashboard">
+    <div class="sec-label" style="margin-top:0;">📊 Live Dashboard</div>
+    <div class="dash-grid">
+      <div class="ds"><div class="ds-num" id="d1"></div><div class="ds-lbl" id="d1l"></div><div class="ds-chg" id="d1c"></div></div>
+      <div class="ds"><div class="ds-num" id="d2"></div><div class="ds-lbl" id="d2l"></div><div class="ds-chg" id="d2c"></div></div>
+      <div class="ds"><div class="ds-num" id="d3"></div><div class="ds-lbl" id="d3l"></div><div class="ds-chg" id="d3c"></div></div>
+      <div class="ds"><div class="ds-num">0</div><div class="ds-lbl">Missed Calls</div><div class="ds-chg">✓ AI handled all</div></div>
+    </div>
+    <div class="sec-label">Live Activity Feed</div>
+    <div class="info-card" style="flex-direction:column;align-items:flex-start;padding:0;overflow:hidden;">
+      <div id="activity-feed" style="width:100%;padding:4px 14px;"></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bn active" onclick="switchTab('home')" id="tab-home"><div class="bn-i">🏠</div><div class="bn-l">Home</div></button>
+    <button class="bn" onclick="switchTab('whatsapp')" id="tab-whatsapp"><div class="bn-i">💬</div><div class="bn-l">WhatsApp</div></button>
+    <button class="bn" onclick="switchTab('voice')" id="tab-voice"><div class="bn-i">📞</div><div class="bn-l">Voice AI</div></button>
+    <button class="bn" onclick="switchTab('services')" id="tab-services"><div class="bn-i">🛠️</div><div class="bn-l">Services</div></button>
+    <button class="bn" onclick="switchTab('dashboard')" id="tab-dashboard"><div class="bn-i">📊</div><div class="bn-l">Dashboard</div></button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  BUSINESS DATABASE
+// ══════════════════════════════════════════
+const businesses = {
+  dental: [
+    {
+      id:'narayani', icon:'🦷', color:'#0a7c6e', name:'Narayani Dental Clinic',
+      type:'Dental Clinic', rating:'⭐ 4.9 (1,731 reviews)', phone:'+91 99443 68922',
+      hours:'Mon–Sat 9:30AM–8PM · Sun 9:30AM–2PM', addr:'74/8 Bagalur Rd, Rajeshwari Nagar, Hosur',
+      tagline:'Where Every Smile Gets Expert Care',
+      heroGrad:'linear-gradient(135deg,#0a1c18,#0a3028)',
+      badge:'🏆 Hosur\'s Most Reviewed Dental Clinic',
+      heroTitle:'Never Miss a Patient Again',
+      heroDesc:'AI handles your calls, WhatsApp & bookings — even at midnight.',
+      stats:[{v:'1,731',l:'Google Reviews'},{v:'24/7',l:'AI Active'},{v:'0',l:'Missed Calls'}],
+      waWelcome:'👋 Hello! Welcome to *Narayani Dental Clinic*.\n\nI\'m your AI assistant. How can I help?\n\n• 📅 Book appointment\n• 💰 Treatment prices\n• 👨‍⚕️ Our doctors\n• ⏰ Timings',
+      waReplies:{
+        'book':'📅 I can book your appointment right now!\n\nWhich treatment?\n1. Root Canal\n2. Dental Implant\n3. Braces / Invisalign\n4. General Checkup\n\nReply with the number 😊',
+        'root canal':'Root Canal at Narayani Dental:\n\n💰 *₹3,500 – ₹6,000* per tooth\n👨‍⚕️ Dr. A.R. Bharathraj (Endodontist)\n\nShall I book an appointment?',
+        'implant':'Dental Implants:\n\n💰 *₹25,000 – ₹35,000* per implant\n👨‍⚕️ Dr. A.R. Bharathraj (FICOI Certified)\n\nWould you like a free consultation? 🦷',
+        'doctor':'Our Specialists:\n\n👩‍⚕️ *Dr. R. Narayani* — Orthodontist & Invisalign Provider\n👨‍⚕️ *Dr. A.R. Bharathraj* — Endodontist & Implantologist\n\nWhich doctor would you like to book?',
+        'timing':'⏰ Clinic Hours:\n\n📅 Mon–Sat: 9:30AM – 8:00PM\n☀️ Sunday: 9:30AM – 2:00PM\n\n📞 +91 99443 68922',
+        'price':'Our Treatment Prices:\n\n🔹 Consultation: ₹200\n🔹 Root Canal: ₹3,500–₹6,000\n🔹 Implant: ₹25,000–₹35,000\n🔹 Braces: ₹20,000–₹40,000\n🔹 Bleaching: ₹4,000–₹6,000\n\nWhich treatment interests you?',
+      },
+      waQRs:['📅 Book Appointment','💰 Treatment Prices','👨‍⚕️ Our Doctors','⏰ Timings','🔩 Implant Cost'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling Narayani Dental Clinic! I\'m your AI receptionist. How can I help you today?'},
+        {who:'caller',text:'Hi, I want to know the cost of root canal treatment.'},
+        {who:'ai',text:'Root canal at Narayani Dental starts from ₹3,500 up to ₹6,000 depending on the tooth. It\'s handled by Dr. A.R. Bharathraj, our specialist Endodontist.'},
+        {who:'caller',text:'Okay, can I book for this Saturday?'},
+        {who:'ai',text:'Absolutely! I have a slot available Saturday at 11:00 AM with Dr. Bharathraj. May I have your name and number to confirm?'},
+        {who:'caller',text:'It\'s Ravi, 98765 43210.'},
+        {who:'ai',text:'Perfect! Appointment confirmed — Saturday 11:00 AM with Dr. Bharathraj. You\'ll get a WhatsApp confirmation shortly. Anything else?'},
+      ],
+      services:[
+        {i:'🌀',n:'Root Canal',p:'₹3,500–₹6,000'},{i:'👑',n:'Crowns',p:'₹5,000–₹8,000'},
+        {i:'🔩',n:'Dental Implant',p:'₹25,000–₹35,000'},{i:'✨',n:'Smile Design',p:'₹15,000–₹50,000'},
+        {i:'🪥',n:'Bleaching',p:'₹4,000–₹6,000'},{i:'🔲',n:'Invisalign',p:'₹80,000+'},
+        {i:'😁',n:'Braces',p:'₹20,000–₹40,000'},{i:'🩺',n:'Consultation',p:'₹200'},
+      ],
+      svcLabel:'🦷 Treatments & Pricing',
+      dash:[{v:'47',l:'WhatsApp Msgs Today',c:'↑ 12 from yesterday'},{v:'18',l:'Calls Handled by AI',c:'↑ 5 from yesterday'},{v:'9',l:'Appointments Booked',c:'↑ 3 from yesterday'}],
+      activity:[
+        {dot:'💬',bg:'rgba(0,201,167,0.1)',title:'WhatsApp — Appointment Booked',sub:'Patient Meena booked Root Canal for 18 Apr',time:'2m ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call — Price Query Answered',sub:'AI quoted Implant: ₹25,000–₹35,000',time:'11m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'Reminder Sent — Ravi Kumar',sub:'Tomorrow 11AM with Dr. Bharathraj — confirmed',time:'24m ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call at 10:48 PM — After Hours',sub:'AI answered, took callback details',time:'8h ago'},
+      ],
+    },
+    {
+      id:'smilecare', icon:'😁', color:'#1a6fa8', name:'Smile Care Dental Clinic',
+      type:'Advanced Implant & Braces Centre', rating:'⭐ 4.9 (760 reviews)', phone:'+91 77081 26800',
+      hours:'Mon–Sat 10AM–9PM · Sun 10AM–2PM', addr:'Tank Street, Hosur, Tamil Nadu 635109',
+      tagline:'Advanced Implants & Braces — Hosur\'s Finest',
+      heroGrad:'linear-gradient(135deg,#0a1420,#0a2040)',
+      badge:'🏆 Advanced Implant & Braces Centre',
+      heroTitle:'Your AI Receptionist is Ready',
+      heroDesc:'Never lose a patient to a missed call or unanswered WhatsApp again.',
+      stats:[{v:'760',l:'Google Reviews'},{v:'24/7',l:'AI Active'},{v:'0',l:'Missed Calls'}],
+      waWelcome:'👋 Welcome to *Smile Care Dental Clinic*!\n\nYour advanced implant & braces specialists. How can I help?\n\n• 📅 Book appointment\n• 🔩 Implant info\n• 😁 Braces & Invisalign\n• ⏰ Clinic hours',
+      waReplies:{
+        'implant':'Dental Implants at Smile Care:\n\n💰 *₹25,000 – ₹35,000* per implant\n✅ Over 500 successful implant cases\n\nWould you like a free consultation? 🦷',
+        'braces':'Braces at Smile Care:\n\n💰 Metal Braces: *₹20,000 – ₹35,000*\n💰 Ceramic Braces: *₹30,000 – ₹45,000*\n\nShall I book an evaluation appointment?',
+        'book':'I\'ll book your appointment right now! 📅\n\nWhich treatment are you looking for?\n1. Dental Implant\n2. Braces\n3. Root Canal\n4. General Checkup',
+        'timing':'⏰ Smile Care Hours:\n\n📅 Mon–Sat: 10AM – 9PM\n☀️ Sunday: 10AM – 2PM\n\n📞 +91 77081 26800',
+        'price':'Treatment Prices at Smile Care:\n\n🔹 Consultation: ₹200\n🔹 Implant: ₹25,000–₹35,000\n🔹 Metal Braces: ₹20,000–₹35,000\n🔹 Root Canal: ₹3,500–₹6,000\n🔹 Crown: ₹5,000–₹8,000',
+      },
+      waQRs:['📅 Book Appointment','🔩 Implant Info','😁 Braces Cost','⏰ Timings','💰 All Prices'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling Smile Care Dental Clinic! I\'m your AI receptionist. How may I help you?'},
+        {who:'caller',text:'Hello, I want to know about dental implants.'},
+        {who:'ai',text:'Great choice! Dental implants at Smile Care start from ₹25,000 per implant. We\'ve completed over 500 successful implant cases. Our doctor will assess your suitability in a free consultation.'},
+        {who:'caller',text:'Can I get a free consultation this week?'},
+        {who:'ai',text:'Absolutely! We have a slot on Thursday at 6:00 PM. Shall I confirm that for you?'},
+        {who:'caller',text:'Yes please, name is Suresh.'},
+        {who:'ai',text:'Done, Suresh! Free consultation booked — Thursday 6:00 PM at Smile Care Dental. You\'ll receive a WhatsApp confirmation shortly!'},
+      ],
+      services:[
+        {i:'🔩',n:'Dental Implant',p:'₹25,000–₹35,000'},{i:'😁',n:'Metal Braces',p:'₹20,000–₹35,000'},
+        {i:'🔲',n:'Ceramic Braces',p:'₹30,000–₹45,000'},{i:'🌀',n:'Root Canal',p:'₹3,500–₹6,000'},
+        {i:'👑',n:'Crown',p:'₹5,000–₹8,000'},{i:'🪥',n:'Cleaning',p:'₹800–₹1,200'},
+        {i:'✨',n:'Smile Design',p:'₹15,000–₹50,000'},{i:'🩺',n:'Consultation',p:'Free / ₹200'},
+      ],
+      svcLabel:'🦷 Treatments & Pricing',
+      dash:[{v:'38',l:'WhatsApp Msgs Today',c:'↑ 8 from yesterday'},{v:'14',l:'Calls Handled by AI',c:'↑ 4 from yesterday'},{v:'7',l:'Appointments Booked',c:'↑ 2 from yesterday'}],
+      activity:[
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call — Implant Inquiry',sub:'AI explained pricing & booked consultation',time:'5m ago'},
+        {dot:'💬',bg:'rgba(0,201,167,0.1)',title:'WhatsApp — Braces Query',sub:'AI quoted ceramic braces: ₹30,000–₹45,000',time:'22m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'Appointment Confirmed — Suresh',sub:'Thursday 6PM — Free Implant Consultation',time:'45m ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call at 9:15 PM — After Hours',sub:'AI answered, scheduled callback',time:'7h ago'},
+      ],
+    },
+    {
+      id:'sriram', icon:'🏥', color:'#2d6a4f', name:"Dr. Sriram's Family Dental",
+      type:'Family Dental Care', rating:'⭐ 5.0 (99 reviews)', phone:'+91 85081 26692',
+      hours:'Mon–Sun 9AM–10PM', addr:'NGGO\'s Colony, Ramanasree Nagar, Hosur',
+      tagline:'Perfect 5 Stars — Family Dental Care You Can Trust',
+      heroGrad:'linear-gradient(135deg,#0a1a12,#0a2818)',
+      badge:'🌟 Hosur\'s Only 5-Star Rated Dental Clinic',
+      heroTitle:'A 5-Star Experience, Automated',
+      heroDesc:'Let AI handle your bookings while you focus on giving perfect care.',
+      stats:[{v:'5.0 ⭐',l:'Perfect Rating'},{v:'24/7',l:'AI Active'},{v:'0',l:'Missed Calls'}],
+      waWelcome:'👋 Hello! Welcome to *Dr. Sriram\'s Family Dental Care*.\n\nWe\'re Hosur\'s only 5-star rated clinic! How can I help?\n\n• 📅 Book appointment\n• 💰 Prices\n• ⏰ Timings\n• 🦷 Treatments',
+      waReplies:{
+        'book':'Great! I\'ll book your appointment with Dr. Sriram 📅\n\nWhich treatment do you need?\n1. Wisdom Tooth Removal\n2. Root Canal\n3. Filling\n4. General Checkup',
+        'wisdom':'Wisdom Tooth Removal:\n\n💰 *₹2,000 – ₹5,000* depending on complexity\n✅ Painless procedure, quick recovery\n\nShall I book a consultation?',
+        'timing':'⏰ Dr. Sriram\'s Hours:\n\n📅 *Every Day:* 9AM – 10PM\n(Yes, including Sundays! 🙌)\n\n📞 +91 85081 26692',
+        'price':'Prices at Dr. Sriram\'s:\n\n🔹 Consultation: ₹200\n🔹 Wisdom Tooth: ₹2,000–₹5,000\n🔹 Root Canal: ₹3,000–₹5,500\n🔹 Filling: ₹500–₹1,500\n🔹 Implant: ₹25,000–₹35,000',
+        'root':'Root Canal at Dr. Sriram\'s:\n\n💰 *₹3,000 – ₹5,500* per tooth\n✅ Pain-free procedure guaranteed\n\nShall I book an appointment?',
+      },
+      waQRs:['📅 Book Appointment','🦷 Wisdom Tooth','🌀 Root Canal','⏰ Timings','💰 Prices'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling Dr. Sriram\'s Family Dental Care — Hosur\'s 5-star clinic! How can I help?'},
+        {who:'caller',text:'I have a wisdom tooth pain. How much does removal cost?'},
+        {who:'ai',text:'Wisdom tooth removal at Dr. Sriram\'s is ₹2,000 to ₹5,000 depending on complexity. It\'s a painless procedure done with local anesthesia, usually completed in one visit.'},
+        {who:'caller',text:'Can I come today evening?'},
+        {who:'ai',text:'Yes! We\'re open until 10 PM today. I can book you for 7:00 PM. May I have your name?'},
+        {who:'caller',text:'Priya.'},
+        {who:'ai',text:'Confirmed, Priya! Appointment today at 7:00 PM with Dr. Sriram. See you then — you\'ll get a WhatsApp confirmation now!'},
+      ],
+      services:[
+        {i:'🦷',n:'Wisdom Tooth',p:'₹2,000–₹5,000'},{i:'🌀',n:'Root Canal',p:'₹3,000–₹5,500'},
+        {i:'🪥',n:'Tooth Filling',p:'₹500–₹1,500'},{i:'🔩',n:'Dental Implant',p:'₹25,000–₹35,000'},
+        {i:'👑',n:'Crown',p:'₹5,000–₹8,000'},{i:'🧹',n:'Scaling',p:'₹800–₹1,200'},
+        {i:'✨',n:'Smile Design',p:'₹15,000+'},{i:'🩺',n:'Consultation',p:'₹200'},
+      ],
+      svcLabel:'🦷 Treatments & Pricing',
+      dash:[{v:'29',l:'WhatsApp Msgs Today',c:'↑ 6 from yesterday'},{v:'11',l:'Calls Handled by AI',c:'↑ 3 from yesterday'},{v:'6',l:'Appointments Booked',c:'↑ 1 from yesterday'}],
+      activity:[
+        {dot:'💬',bg:'rgba(0,201,167,0.1)',title:'WhatsApp — Wisdom Tooth Query',sub:'AI explained procedure & booked Priya 7PM',time:'3m ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call — Root Canal Enquiry',sub:'AI quoted ₹3,000–₹5,500, booked appointment',time:'19m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'Reminder Sent — Karthik',sub:'Tomorrow 10AM — Filling appointment confirmed',time:'1h ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Sunday Call at 8PM',sub:'AI answered — booked Monday morning slot',time:'1d ago'},
+      ],
+    },
+    {
+      id:'deekshu', icon:'🦷', color:'#7c3aed', name:'Deekshu Dental Clinic',
+      type:'Dental Clinic · Open 7 Days', rating:'⭐ 4.9 (610 reviews)', phone:'+91 63790 05404',
+      hours:'Mon–Sun 9AM–9PM', addr:'TNHB Office Area, Bagalur Housing Board, Hosur',
+      tagline:'Gentle Care, Lasting Smiles — Open Every Day',
+      heroGrad:'linear-gradient(135deg,#100a20,#1a0a30)',
+      badge:'✅ Open 7 Days a Week',
+      heroTitle:'AI That Works Every Single Day',
+      heroDesc:'Just like your clinic — your AI receptionist never takes a day off.',
+      stats:[{v:'610',l:'Google Reviews'},{v:'7 Days',l:'AI Available'},{v:'0',l:'Missed Calls'}],
+      waWelcome:'👋 Hello! Welcome to *Deekshu Dental Clinic*.\n\nWe\'re open 7 days a week for your convenience! How can I help?\n\n• 📅 Book appointment\n• 💰 Prices\n• 🦷 Treatments\n• ⏰ Timings',
+      waReplies:{
+        'book':'Sure! Let me book your appointment 📅\n\nAvailable today:\n• Morning: 9AM–12PM\n• Afternoon: 12PM–5PM\n• Evening: 5PM–9PM\n\nWhich time works for you?',
+        'extraction':'Tooth Extraction at Deekshu Dental:\n\n💰 Simple: *₹500 – ₹1,500*\n💰 Surgical: *₹2,000 – ₹4,000*\n✅ Gentle & painless procedure\n\nShall I book an appointment?',
+        'timing':'⏰ Deekshu Dental Hours:\n\n📅 *Every Day* (Mon–Sun)\n9:00 AM – 9:00 PM\n\n📞 +91 63790 05404',
+        'price':'Prices at Deekshu Dental:\n\n🔹 Consultation: ₹200\n🔹 Extraction: ₹500–₹4,000\n🔹 Root Canal: ₹3,000–₹5,500\n🔹 Filling: ₹500–₹1,500\n🔹 Scaling: ₹800–₹1,200',
+        'filling':'Tooth Filling at Deekshu:\n\n💰 GIC Filling: *₹500 – ₹800*\n💰 Composite: *₹1,000 – ₹1,500*\n✅ Quick, painless, same-day done\n\nWant to book?',
+      },
+      waQRs:['📅 Book Appointment','🦷 Tooth Extraction','🪥 Filling','⏰ Timings','💰 Prices'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling Deekshu Dental Clinic! We\'re open 7 days a week. How can I help you?'},
+        {who:'caller',text:'I need a tooth filling done. How much does it cost?'},
+        {who:'ai',text:'Tooth filling at Deekshu Dental costs ₹500 to ₹1,500 depending on the type — GIC or composite filling. Both are quick, painless, and done in one visit.'},
+        {who:'caller',text:'Can I come on Sunday?'},
+        {who:'ai',text:'Yes! We\'re open on Sunday from 9AM to 9PM. I can book you for Sunday at 11:00 AM. May I have your name?'},
+        {who:'caller',text:'Ananya.'},
+        {who:'ai',text:'Confirmed, Ananya! Sunday 11AM at Deekshu Dental. We\'ll send you a WhatsApp reminder the day before. See you!'},
+      ],
+      services:[
+        {i:'🪥',n:'Tooth Filling',p:'₹500–₹1,500'},{i:'🦷',n:'Extraction',p:'₹500–₹4,000'},
+        {i:'🌀',n:'Root Canal',p:'₹3,000–₹5,500'},{i:'🧹',n:'Scaling',p:'₹800–₹1,200'},
+        {i:'👑',n:'Crown',p:'₹5,000–₹8,000'},{i:'🔩',n:'Implant',p:'₹25,000–₹35,000'},
+        {i:'👶',n:'Kids Dentistry',p:'₹500–₹2,000'},{i:'🩺',n:'Consultation',p:'₹200'},
+      ],
+      svcLabel:'🦷 Treatments & Pricing',
+      dash:[{v:'33',l:'WhatsApp Msgs Today',c:'↑ 7 from yesterday'},{v:'12',l:'Calls Handled by AI',c:'↑ 2 from yesterday'},{v:'5',l:'Appointments Booked',c:'Same as yesterday'}],
+      activity:[
+        {dot:'💬',bg:'rgba(0,201,167,0.1)',title:'WhatsApp — Sunday Booking',sub:'Patient Ananya booked Sunday 11AM filling',time:'8m ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call — Extraction Query',sub:'AI quoted ₹500–₹4,000 and booked slot',time:'31m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'Reminder Sent — 4 patients',sub:'Tomorrow morning appointments confirmed',time:'2h ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Sunday 8:30PM Call',sub:'AI answered after hours, booked Monday',time:'1d ago'},
+      ],
+    },
+    {
+      id:'pearlline', icon:'💎', color:'#b45309', name:'Pearlline Dentocare',
+      type:'AI Digital Dentistry · Smile Makeover Studio', rating:'⭐ 4.9 (617 reviews)', phone:'+91 80102 01080',
+      hours:'Mon–Sat 10AM–9PM · Sun 10AM–2PM', addr:'Tank Street, near Sivan Kovil, Hosur',
+      tagline:'Smart AI Digital Dentistry — Smile Makeover Specialists',
+      heroGrad:'linear-gradient(135deg,#1a0f00,#2d1800)',
+      badge:'🤖 Already an AI-Forward Clinic',
+      heroTitle:'The AI Clinic Gets an AI Receptionist',
+      heroDesc:'You already do digital dentistry — now automate your patient communication too.',
+      stats:[{v:'617',l:'Google Reviews'},{v:'AI',l:'Digital Dentistry'},{v:'0',l:'Missed Calls'}],
+      waWelcome:'👋 Welcome to *Pearlline Dentocare* — Hosur\'s Smart AI Dental Studio!\n\nHow can I assist you today?\n\n• 📅 Book appointment\n• ✨ Smile Makeover info\n• 💰 Treatment prices\n• ⏰ Timings',
+      waReplies:{
+        'smile':'Smile Makeover at Pearlline:\n\n✨ *₹15,000 – ₹80,000* (comprehensive)\nIncludes: Veneers, Bleaching, Contouring\n\nEvery smile is custom designed by Dr. Sangamithra 😊\n\nShall I book a smile consultation?',
+        'book':'I\'ll get you booked right away! 📅\n\nOur smile makeover consultations are free. Which treatment are you interested in?\n1. Smile Makeover\n2. Teeth Whitening\n3. Veneers\n4. Dental Implant',
+        'timing':'⏰ Pearlline Dentocare Hours:\n\n📅 Mon–Sat: 10AM – 9PM\n☀️ Sunday: 10AM – 2PM\n\n📞 +91 80102 01080',
+        'whitening':'Teeth Whitening at Pearlline:\n\n💰 In-clinic Bleaching: *₹4,000 – ₹6,000*\n✅ Professional grade, instant results\n\nWant to book a whitening session?',
+        'price':'Pearlline Treatment Prices:\n\n🔹 Smile Makeover: ₹15,000–₹80,000\n🔹 Bleaching: ₹4,000–₹6,000\n🔹 Veneers: ₹8,000–₹15,000 each\n🔹 Root Canal: ₹3,500–₹6,000\n🔹 Implant: ₹25,000–₹35,000',
+      },
+      waQRs:['📅 Book Appointment','✨ Smile Makeover','🪥 Teeth Whitening','⏰ Timings','💰 Prices'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling Pearlline Dentocare — Hosur\'s smart AI digital dental studio! How can I help?'},
+        {who:'caller',text:'I\'m interested in a smile makeover. What does it include?'},
+        {who:'ai',text:'A smile makeover at Pearlline is fully customized for you! It can include teeth whitening, veneers, contouring, and more. Prices range from ₹15,000 to ₹80,000 depending on your needs. Dr. Sangamithra will design your perfect smile.'},
+        {who:'caller',text:'Can I get a consultation?'},
+        {who:'ai',text:'Absolutely — smile consultations are free! I have Saturday at 5:00 PM available. Shall I book that for you?'},
+        {who:'caller',text:'Yes, name is Divya.'},
+        {who:'ai',text:'Confirmed, Divya! Free smile consultation — Saturday 5:00 PM with Dr. Sangamithra at Pearlline. See you there! 😊'},
+      ],
+      services:[
+        {i:'✨',n:'Smile Makeover',p:'₹15,000–₹80,000'},{i:'🪥',n:'Teeth Whitening',p:'₹4,000–₹6,000'},
+        {i:'💎',n:'Veneers',p:'₹8,000–₹15,000 each'},{i:'🌀',n:'Root Canal',p:'₹3,500–₹6,000'},
+        {i:'🔩',n:'Implant',p:'₹25,000–₹35,000'},{i:'👑',n:'Crown',p:'₹5,000–₹8,000'},
+        {i:'😁',n:'Braces',p:'₹20,000–₹40,000'},{i:'🩺',n:'Consultation',p:'Free'},
+      ],
+      svcLabel:'✨ Treatments & Pricing',
+      dash:[{v:'41',l:'WhatsApp Msgs Today',c:'↑ 10 from yesterday'},{v:'15',l:'Calls Handled by AI',c:'↑ 5 from yesterday'},{v:'8',l:'Smile Consults Booked',c:'↑ 3 from yesterday'}],
+      activity:[
+        {dot:'💬',bg:'rgba(0,201,167,0.1)',title:'WhatsApp — Smile Makeover',sub:'Divya booked free consultation Saturday',time:'1m ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call — Whitening Query',sub:'AI quoted ₹4,000–₹6,000, booked session',time:'18m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'3 Smile Consults Confirmed',sub:'AI sent reminders to all patients',time:'1h ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call at 9:05 PM — After Hours',sub:'AI answered, noted query for tomorrow',time:'6h ago'},
+      ],
+    },
+    {
+      id:'kani', icon:'🦷', color:'#065f46', name:'KANI Advanced Dental Care',
+      type:'Advanced Dental Care', rating:'⭐ 4.9 (232 reviews)', phone:'+91 86085 22774',
+      hours:'Mon–Sun 9:30AM–9PM', addr:'Ringroad, near Mosque, RK HUDCO, Hosur',
+      tagline:'Advanced Care. Healthy Smiles. Every Day.',
+      heroGrad:'linear-gradient(135deg,#001a12,#002818)',
+      badge:'🌟 Advanced Dental Specialists',
+      heroTitle:'Advanced Dentistry + AI Automation',
+      heroDesc:'Pair your advanced treatments with an AI that never lets a patient slip through.',
+      stats:[{v:'232',l:'Google Reviews'},{v:'24/7',l:'AI Active'},{v:'0',l:'Missed Calls'}],
+      waWelcome:'👋 Hello! Welcome to *KANI Advanced Dental Care*.\n\nHow can I assist you today?\n\n• 📅 Book appointment\n• 🦷 Treatments\n• 💰 Prices\n• ⏰ Timings',
+      waReplies:{
+        'crown':'Dental Crown at KANI:\n\n💰 Ceramic Crown: *₹5,000 – ₹8,000*\n💰 Zirconia Crown: *₹8,000 – ₹12,000*\n✅ Natural look, durable & long-lasting\n\nShall I book a consultation?',
+        'book':'Let me book your appointment at KANI Advanced Dental! 📅\n\nPreferred time:\n1. Morning (9:30AM–12PM)\n2. Afternoon (12PM–5PM)\n3. Evening (5PM–9PM)',
+        'timing':'⏰ KANI Dental Hours:\n\n📅 *Every Day* (Mon–Sun)\n9:30 AM – 9:00 PM\n\n📞 +91 86085 22774',
+        'root':'Root Canal at KANI:\n\n💰 *₹3,500 – ₹6,000* per tooth\n✅ Painless procedure, advanced equipment\n\nWant to book?',
+        'price':'KANI Advanced Dental Prices:\n\n🔹 Consultation: ₹200\n🔹 Crown (Ceramic): ₹5,000–₹8,000\n🔹 Crown (Zirconia): ₹8,000–₹12,000\n🔹 Root Canal: ₹3,500–₹6,000\n🔹 Filling: ₹500–₹1,500',
+      },
+      waQRs:['📅 Book Appointment','👑 Dental Crown','🌀 Root Canal','⏰ Timings','💰 Prices'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling KANI Advanced Dental Care! How can I help you today?'},
+        {who:'caller',text:'My tooth is half broken. What are my options?'},
+        {who:'ai',text:'For a broken tooth, we typically recommend a dental crown to restore it completely. KANI offers ceramic crowns from ₹5,000 and zirconia crowns from ₹8,000. Our doctor will assess and suggest the best option.'},
+        {who:'caller',text:'Can I come tomorrow?'},
+        {who:'ai',text:'Yes! We\'re open tomorrow from 9:30AM. I can book you for 10:00 AM. May I have your name?'},
+        {who:'caller',text:'Murugan.'},
+        {who:'ai',text:'Confirmed, Murugan! Tomorrow 10:00 AM at KANI Advanced Dental. We\'ll WhatsApp you the details!'},
+      ],
+      services:[
+        {i:'👑',n:'Ceramic Crown',p:'₹5,000–₹8,000'},{i:'💎',n:'Zirconia Crown',p:'₹8,000–₹12,000'},
+        {i:'🌀',n:'Root Canal',p:'₹3,500–₹6,000'},{i:'🪥',n:'Filling',p:'₹500–₹1,500'},
+        {i:'🔩',n:'Implant',p:'₹25,000–₹35,000'},{i:'🧹',n:'Scaling',p:'₹800–₹1,200'},
+        {i:'😁',n:'Braces',p:'₹20,000–₹40,000'},{i:'🩺',n:'Consultation',p:'₹200'},
+      ],
+      svcLabel:'🦷 Treatments & Pricing',
+      dash:[{v:'22',l:'WhatsApp Msgs Today',c:'↑ 5 from yesterday'},{v:'9',l:'Calls Handled by AI',c:'↑ 2 from yesterday'},{v:'4',l:'Appointments Booked',c:'Same as yesterday'}],
+      activity:[
+        {dot:'💬',bg:'rgba(0,201,167,0.1)',title:'WhatsApp — Crown Enquiry',sub:'Murugan booked tomorrow 10AM',time:'6m ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call — Root Canal Query',sub:'AI answered & booked same-day slot',time:'28m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'Reminder — 2 patients',sub:'Tomorrow morning appointments confirmed',time:'2h ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call at 9PM — Closing Time',sub:'AI answered, booked next morning',time:'5h ago'},
+      ],
+    },
+  ],
+  salon: [
+    {
+      id:'naturallook', icon:'💇', color:'#be185d', name:'Naturallook Family Salon',
+      type:'Bridal Studio · Hair & Beauty', rating:'⭐ 4.9 (4,300+ reviews)', phone:'+91 96882 66300',
+      hours:'Mon–Sun 8AM–9:30PM', addr:'Bagalur Rd & Thally Rd, Hosur (3 locations)',
+      tagline:'Hosur\'s Most Loved Salon — Now with AI',
+      heroGrad:'linear-gradient(135deg,#1a0010,#2d0020)',
+      badge:'🏆 Hosur\'s Largest Salon Chain',
+      heroTitle:'Stop Missing Bookings. Start Growing.',
+      heroDesc:'Naturallook gets 100+ enquiries daily. Your AI handles every single one.',
+      stats:[{v:'4,300+',l:'Google Reviews'},{v:'3',l:'Locations'},{v:'0',l:'Missed Bookings'}],
+      waWelcome:'💇 Hello! Welcome to *Naturallook Family Salon & Bridal Studio*!\n\nYour style, our passion. How can I help?\n\n• 📅 Book an appointment\n• 💍 Bridal packages\n• 💰 Service prices\n• ⏰ Our timings',
+      waReplies:{
+        'bridal':'💍 Naturallook Bridal Packages:\n\n🌸 Basic Bridal: *₹8,000 – ₹15,000*\n🌟 Premium Bridal: *₹20,000 – ₹40,000*\n👑 Platinum Bridal: *₹50,000+*\n\nIncludes makeup, hair, draping & more!\n\nWant to schedule a bridal trial? 💄',
+        'hair':'Hair Services at Naturallook:\n\n💰 Haircut: *₹200 – ₹500*\n💰 Hair Color: *₹1,500 – ₹5,000*\n💰 Hair Spa: *₹800 – ₹2,000*\n💰 Smoothening: *₹4,000 – ₹10,000*\n\nShall I book for you?',
+        'book':'Let me book your appointment! 📅\n\nWhich service?\n1. Haircut & Styling\n2. Hair Color / Treatment\n3. Bridal Package\n4. Facial / Skin Care\n5. Full Makeover',
+        'timing':'⏰ Naturallook Hours:\n\n📅 *Every Day* (Mon–Sun)\n8:00 AM – 9:30 PM\n\n📍 3 locations in Hosur\n📞 +91 96882 66300',
+        'makeup':'Makeup Services:\n\n💰 Party Makeup: *₹2,000 – ₹5,000*\n💰 Bridal Makeup: *₹8,000 – ₹25,000*\n💰 Engagement Makeup: *₹5,000 – ₹12,000*\n\nShall I check availability for your date?',
+      },
+      waQRs:['📅 Book Appointment','💍 Bridal Package','💇 Hair Services','💄 Makeup','⏰ Timings'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling Naturallook Family Salon! How can I help you today?'},
+        {who:'caller',text:'Hi, I\'m getting married next month. Can you tell me about bridal packages?'},
+        {who:'ai',text:'Congratulations! Our bridal packages start from ₹8,000 for basic and go up to ₹50,000 for platinum — which includes full makeup, hair styling, draping, and a trial session. Our director personally handles premium bridal bookings.'},
+        {who:'caller',text:'Can I book a bridal trial?'},
+        {who:'ai',text:'Absolutely! A bridal trial helps us perfect your look before the big day. I have Saturday at 10:00 AM available. Shall I book that?'},
+        {who:'caller',text:'Yes, my name is Kavitha.'},
+        {who:'ai',text:'Confirmed, Kavitha! Bridal trial — Saturday 10:00 AM at Naturallook. We\'ll WhatsApp you all the details. Congratulations again! 💍'},
+      ],
+      services:[
+        {i:'💇',n:'Haircut',p:'₹200–₹500'},{i:'🎨',n:'Hair Color',p:'₹1,500–₹5,000'},
+        {i:'💆',n:'Hair Spa',p:'₹800–₹2,000'},{i:'✨',n:'Smoothening',p:'₹4,000–₹10,000'},
+        {i:'💄',n:'Party Makeup',p:'₹2,000–₹5,000'},{i:'💍',n:'Bridal Makeup',p:'₹8,000–₹25,000'},
+        {i:'🧖',n:'Facial',p:'₹500–₹2,500'},{i:'💅',n:'Nail Art',p:'₹300–₹1,500'},
+      ],
+      svcLabel:'💇 Services & Pricing',
+      dash:[{v:'94',l:'WhatsApp Msgs Today',c:'↑ 23 from yesterday'},{v:'31',l:'Calls Handled by AI',c:'↑ 8 from yesterday'},{v:'19',l:'Bookings Confirmed',c:'↑ 6 from yesterday'}],
+      activity:[
+        {dot:'💬',bg:'rgba(190,24,93,0.1)',title:'WhatsApp — Bridal Enquiry',sub:'Kavitha booked bridal trial Saturday 10AM',time:'2m ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call — Hair Color Query',sub:'AI quoted ₹1,500–₹5,000 & booked slot',time:'14m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'5 Bridal Trials This Week',sub:'AI confirmed all appointments automatically',time:'1h ago'},
+        {dot:'💬',bg:'rgba(190,24,93,0.1)',title:'Late Night WhatsApp',sub:'Booking enquiry at 11PM — AI replied instantly',time:'9h ago'},
+      ],
+    },
+    {
+      id:'vanity', icon:'✂️', color:'#92400e', name:'Vanity Unisex Salon',
+      type:'Unisex Salon · Premium Grooming', rating:'⭐ 4.9 (2,117 reviews)', phone:'+91 81228 62911',
+      hours:'Mon–Sun 8:30AM–10PM', addr:'NGGO\'s Colony, Hosur, Tamil Nadu',
+      tagline:'Sharp Cuts. Bold Styles. AI-Powered Bookings.',
+      heroGrad:'linear-gradient(135deg,#1a0f00,#2a1800)',
+      badge:'✂️ Hosur\'s Premium Unisex Salon',
+      heroTitle:'Every Walk-In Deserves a Booking',
+      heroDesc:'Let AI capture every call & WhatsApp so no customer goes to a competitor.',
+      stats:[{v:'2,117',l:'Google Reviews'},{v:'24/7',l:'AI Active'},{v:'0',l:'Missed Bookings'}],
+      waWelcome:'✂️ Hey! Welcome to *Vanity Unisex Salon*!\n\nSharp cuts, bold styles — for everyone. How can I help?\n\n• 📅 Book appointment\n• 💰 Service prices\n• 💇 Men\'s grooming\n• 💆 Women\'s services',
+      waReplies:{
+        'haircut':'Haircut at Vanity:\n\n💰 Men\'s Haircut: *₹200 – ₹400*\n💰 Women\'s Haircut: *₹300 – ₹600*\n💰 Kids Haircut: *₹200 – ₹300*\n\n✅ Our stylists will suggest the best cut for your face shape!\n\nShall I book?',
+        'beard':'Men\'s Grooming at Vanity:\n\n💰 Beard Trim: *₹150 – ₹300*\n💰 Beard Design: *₹300 – ₹500*\n💰 Haircut + Beard: *₹350 – ₹700*\n\nWant to book with Venu / Vinoth?',
+        'book':'Let\'s book your appointment! 📅\n\nChoose your service:\n1. Haircut (Men/Women)\n2. Beard Grooming\n3. Hair Color\n4. Facial / Skin Care',
+        'timing':'⏰ Vanity Unisex Salon:\n\n📅 *Every Day* (Mon–Sun)\n8:30 AM – 10:00 PM\n\n📞 +91 81228 62911',
+        'color':'Hair Color at Vanity:\n\n💰 Global Color: *₹1,500 – ₹3,500*\n💰 Highlights: *₹2,000 – ₹5,000*\n💰 Balayage: *₹4,000 – ₹8,000*\n\nShall I check stylist availability?',
+      },
+      waQRs:['📅 Book Appointment','✂️ Haircut Price','🧔 Beard Grooming','🎨 Hair Color','⏰ Timings'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling Vanity Unisex Salon! How can I help you today?'},
+        {who:'caller',text:'Hi, I want a haircut and beard styling. How much would that cost?'},
+        {who:'ai',text:'A haircut and beard styling combo at Vanity starts from ₹350 and goes up to ₹700 depending on the style. Our stylists are experts at finding what suits your face shape best!'},
+        {who:'caller',text:'Can I come today evening?'},
+        {who:'ai',text:'Yes! We\'re open until 10PM. I can book you at 7:30 PM with Venu. Sound good?'},
+        {who:'caller',text:'Perfect, my name is Arun.'},
+        {who:'ai',text:'Confirmed, Arun! Today 7:30 PM at Vanity Unisex Salon with Venu. See you then — look sharp! ✂️'},
+      ],
+      services:[
+        {i:'✂️',n:"Men's Haircut",p:'₹200–₹400'},{i:'💇',n:"Women's Haircut",p:'₹300–₹600'},
+        {i:'🧔',n:'Beard Grooming',p:'₹150–₹500'},{i:'🎨',n:'Hair Color',p:'₹1,500–₹5,000'},
+        {i:'💆',n:'Facial',p:'₹500–₹2,000'},{i:'✨',n:'Highlights',p:'₹2,000–₹5,000'},
+        {i:'🧖',n:'Hair Spa',p:'₹800–₹2,000'},{i:'💅',n:'Manicure',p:'₹300–₹800'},
+      ],
+      svcLabel:'✂️ Services & Pricing',
+      dash:[{v:'67',l:'WhatsApp Msgs Today',c:'↑ 15 from yesterday'},{v:'24',l:'Calls Handled by AI',c:'↑ 6 from yesterday'},{v:'14',l:'Bookings Today',c:'↑ 4 from yesterday'}],
+      activity:[
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call — Haircut + Beard Combo',sub:'Arun booked today 7:30PM with Venu',time:'4m ago'},
+        {dot:'💬',bg:'rgba(146,64,14,0.1)',title:'WhatsApp — Hair Color Query',sub:'AI quoted balayage ₹4,000–₹8,000',time:'20m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'Evening Slots — Fully Booked',sub:'AI managed waitlist automatically',time:'2h ago'},
+        {dot:'💬',bg:'rgba(146,64,14,0.1)',title:'WhatsApp at 10:15 PM',sub:'Booking for tomorrow — AI confirmed',time:'8h ago'},
+      ],
+    },
+    {
+      id:'newparadise', icon:'💄', color:'#7c3aed', name:'New Paradise Beauty Parlour',
+      type:'Beauty Parlour · Bridal Studio · Training Academy', rating:'⭐ 4.9 (1,128 reviews)', phone:'+91 90038 06030',
+      hours:'Mon,Wed–Sun 10AM–9PM · Tue Closed', addr:'Nethaji Road, opp. Kumar Textiles, Hosur',
+      tagline:'Hosur\'s Trusted Beauticians Since Years',
+      heroGrad:'linear-gradient(135deg,#0f0020,#1a0035)',
+      badge:'💄 Trusted Bridal Specialists',
+      heroTitle:'Your Clients Deserve Instant Replies',
+      heroDesc:'Brides plan months ahead. Your AI captures every enquiry — day or night.',
+      stats:[{v:'1,128',l:'Google Reviews'},{v:'24/7',l:'AI Active'},{v:'0',l:'Lost Enquiries'}],
+      waWelcome:'💄 Welcome to *New Paradise Beauty Parlour & Bridal Studio*!\n\nBeauty that transforms. How can I help?\n\n• 📅 Book appointment\n• 💍 Bridal makeup\n• 🧖 Facial & skin care\n• ⏰ Our timings',
+      waReplies:{
+        'bridal':'💍 Bridal Makeup by Bhagya Ma\'am:\n\n🌸 Basic Bridal: *₹8,000 – ₹15,000*\n💍 Premium Bridal: *₹20,000 – ₹40,000*\n\nBhagya ma\'am has 12+ years of experience.\n\nShall I book a bridal consultation?',
+        'facial':'Facial Treatments:\n\n💰 Basic Facial: *₹500 – ₹1,000*\n💰 De-Tan: *₹800 – ₹1,500*\n💰 Gold Facial: *₹1,500 – ₹3,000*\n\nShall I book your facial appointment?',
+        'book':'Let me book for you! 📅\n\nWhat service are you looking for?\n1. Bridal Makeup\n2. Facial / Skin Care\n3. Hair Service\n4. Threading / Waxing',
+        'timing':'⏰ New Paradise Hours:\n\n📅 Mon, Wed–Sun: 10AM – 9PM\n❌ Tuesday: Closed\n\n📞 +91 90038 06030',
+        'hair':'Hair Services:\n\n💰 Haircut: *₹200 – ₹500*\n💰 Hair Smoothening: *₹4,000 – ₹10,000*\n💰 Hair Color: *₹1,500 – ₹5,000*\n\nBhagya ma\'am\'s team will handle you with care!',
+      },
+      waQRs:['📅 Book Appointment','💍 Bridal Makeup','🧖 Facial','💇 Hair Services','⏰ Timings'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling New Paradise Beauty Parlour! How can I help you today?'},
+        {who:'caller',text:'Hi, my daughter\'s engagement is next week. Can we do a trial makeup?'},
+        {who:'ai',text:'Congratulations! Bhagya ma\'am is our specialist with 12+ years of experience in bridal and engagement makeup. Engagement makeup starts from ₹5,000. We can do a trial this week to get the perfect look.'},
+        {who:'caller',text:'Can we come on Saturday?'},
+        {who:'ai',text:'Yes, Saturday is available! I can book a trial at 11:00 AM with Bhagya ma\'am. Shall I confirm?'},
+        {who:'caller',text:'Yes please.'},
+        {who:'ai',text:'Confirmed! Engagement makeup trial — Saturday 11:00 AM with Bhagya ma\'am at New Paradise. We\'ll WhatsApp you the details. Best wishes for the engagement! 💍'},
+      ],
+      services:[
+        {i:'💍',n:'Bridal Makeup',p:'₹8,000–₹40,000'},{i:'💋',n:'Engagement Makeup',p:'₹5,000–₹12,000'},
+        {i:'🧖',n:'Gold Facial',p:'₹1,500–₹3,000'},{i:'🌟',n:'De-Tan Treatment',p:'₹800–₹1,500'},
+        {i:'💇',n:'Hair Smoothening',p:'₹4,000–₹10,000'},{i:'🎨',n:'Hair Color',p:'₹1,500–₹5,000'},
+        {i:'✨',n:'Party Makeup',p:'₹2,000–₹5,000'},{i:'🧴',n:'Basic Facial',p:'₹500–₹1,000'},
+      ],
+      svcLabel:'💄 Services & Pricing',
+      dash:[{v:'52',l:'WhatsApp Msgs Today',c:'↑ 12 from yesterday'},{v:'18',l:'Calls Handled by AI',c:'↑ 4 from yesterday'},{v:'11',l:'Bookings Confirmed',c:'↑ 3 from yesterday'}],
+      activity:[
+        {dot:'💬',bg:'rgba(124,58,237,0.1)',title:'WhatsApp — Bridal Enquiry',sub:'Engagement trial booked Saturday 11AM',time:'3m ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call — Facial Query',sub:'Gold facial booked, ₹1,500 quoted',time:'27m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'4 Bridal Bookings This Week',sub:'All confirmed & reminders sent by AI',time:'2h ago'},
+        {dot:'💬',bg:'rgba(124,58,237,0.1)',title:'Late Night Bridal Enquiry',sub:'AI captured lead at 11:30PM — replied instantly',time:'10h ago'},
+      ],
+    },
+    {
+      id:'studio77', icon:'💈', color:'#1e40af', name:'Studio 77 Signature Lounge',
+      type:'Premium Unisex Salon · Nail & Makeup', rating:'⭐ 4.9 (318 reviews)', phone:'+91 96777 81459',
+      hours:'Mon–Sun 8AM–9PM', addr:'Taluk Office Rd, opp. Sub Jail, Shanthi Nagar, Hosur',
+      tagline:'Signature Style. Premium Experience.',
+      heroGrad:'linear-gradient(135deg,#000a20,#001040)',
+      badge:'💈 Hosur\'s Signature Premium Lounge',
+      heroTitle:'Premium Salon. Premium Experience.',
+      heroDesc:'Your clients expect premium service — give them instant AI responses too.',
+      stats:[{v:'318',l:'Google Reviews'},{v:'4.9 ⭐',l:'Rating'},{v:'0',l:'Missed Bookings'}],
+      waWelcome:'💈 Welcome to *Studio 77 Signature Lounge*!\n\nA premium experience awaits you. How can I help?\n\n• 📅 Book with Shogath/Naveen\n• 💰 Service prices\n• 💅 Nail art\n• ⏰ Our timings',
+      waReplies:{
+        'shogath':'Book with Shogath:\n\n✂️ Shogath is our top-rated stylist, known for precision cuts & beard styling.\n\n💰 Haircut with Shogath: *₹400 – ₹700*\n\nShall I check his availability?',
+        'nail':'Nail Art at Studio 77:\n\n💅 Basic Nail Art: *₹300 – ₹600*\n💅 Gel Nails: *₹800 – ₹1,500*\n💅 Nail Extensions: *₹1,200 – ₹2,500*\n\nWant to book a nail appointment?',
+        'book':'Let me book your signature experience! 📅\n\nChoose:\n1. Haircut with Shogath\n2. Haircut with Naveen\n3. Nail Art / Extensions\n4. Facial / Skin Care',
+        'timing':'⏰ Studio 77 Hours:\n\n📅 *Every Day* (Mon–Sun)\n8:00 AM – 9:00 PM\n\n📞 +91 96777 81459',
+        'haircut':'Haircut at Studio 77:\n\n💰 Men\'s Cut: *₹400 – ₹700*\n💰 Women\'s Cut: *₹500 – ₹900*\n\n✅ Our stylists analyse your face shape & suggest the perfect style.\n\nShall I book?',
+      },
+      waQRs:['📅 Book with Shogath','💅 Nail Art','✂️ Haircut Price','💄 Makeup','⏰ Timings'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling Studio 77 Signature Lounge! How can I assist you?'},
+        {who:'caller',text:'I want a haircut with Shogath. Is he available today?'},
+        {who:'ai',text:'Shogath is available today! He has a slot at 4:00 PM and 6:30 PM. He\'s our top stylist — known for precision cuts and beard styling. Which time works for you?'},
+        {who:'caller',text:'6:30 PM works.'},
+        {who:'ai',text:'Perfect! I\'ll book you with Shogath at 6:30 PM today. May I have your name?'},
+        {who:'caller',text:'Rahul.'},
+        {who:'ai',text:'Confirmed, Rahul! Today 6:30 PM with Shogath at Studio 77. Look forward to seeing you — you\'re in great hands! 💈'},
+      ],
+      services:[
+        {i:'✂️',n:"Men's Haircut",p:'₹400–₹700'},{i:'💇',n:"Women's Haircut",p:'₹500–₹900'},
+        {i:'💅',n:'Nail Art',p:'₹300–₹600'},{i:'💅',n:'Gel Nails',p:'₹800–₹1,500'},
+        {i:'💄',n:'Makeup',p:'₹2,000–₹8,000'},{i:'🧖',n:'Facial',p:'₹600–₹2,500'},
+        {i:'✨',n:'Nail Extensions',p:'₹1,200–₹2,500'},{i:'🧔',n:'Beard Styling',p:'₹200–₹400'},
+      ],
+      svcLabel:'💈 Services & Pricing',
+      dash:[{v:'28',l:'WhatsApp Msgs Today',c:'↑ 7 from yesterday'},{v:'12',l:'Calls Handled by AI',c:'↑ 3 from yesterday'},{v:'8',l:'Bookings Confirmed',c:'↑ 2 from yesterday'}],
+      activity:[
+        {dot:'📞',bg:'rgba(30,64,175,0.1)',title:'Call — Shogath Booking',sub:'Rahul booked today 6:30PM with Shogath',time:'1m ago'},
+        {dot:'💬',bg:'rgba(30,64,175,0.1)',title:'WhatsApp — Nail Extensions',sub:'AI quoted ₹1,200–₹2,500, booked Saturday',time:'16m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'Shogath Fully Booked Today',sub:'AI managing waitlist for tomorrow',time:'1h ago'},
+        {dot:'💬',bg:'rgba(30,64,175,0.1)',title:'Late WhatsApp Booking',sub:'Appointment confirmed for tomorrow 9AM',time:'7h ago'},
+      ],
+    },
+  ],
+  resto: [
+    {
+      id:'vintage', icon:'🍽️', color:'#7f1d1d', name:'The Vintage Restaurant',
+      type:'Restaurant & Party Hall · Event Venue', rating:'⭐ 4.2 (2,143 reviews)', phone:'+91 95002 45333',
+      hours:'Mon–Sun 11AM–11PM', addr:'AVS Residency Rd, Hosur Inner Ring Rd, Hosur',
+      tagline:'Great Food. Grand Events. AI-Powered Service.',
+      heroGrad:'linear-gradient(135deg,#1a0000,#2d0a00)',
+      badge:'🎉 Restaurant + Party Hall',
+      heroTitle:'Never Miss a Table or Event Booking',
+      heroDesc:'Event enquiries come at all hours. Your AI captures every single one.',
+      stats:[{v:'2,143',l:'Google Reviews'},{v:'24/7',l:'AI Active'},{v:'0',l:'Lost Bookings'}],
+      waWelcome:'🍽️ Welcome to *The Vintage Restaurant & Party Hall*!\n\nGreat food, grand celebrations. How can I help?\n\n• 📅 Book a table\n• 🎉 Event/party hall booking\n• 📋 View menu\n• ⏰ Timings',
+      waReplies:{
+        'party':'🎉 Party Hall Booking at Vintage:\n\n👥 Capacity: Up to 200 guests\n💰 Hall Rental: *₹15,000 – ₹50,000*\n🍽️ Catering packages available\n\nPerfect for weddings, birthdays & corporate events!\n\nShall I check availability for your date?',
+        'table':'Table Booking at Vintage:\n\n📅 Reserve your table in advance!\n\nHow many people & which date?\n\nWe\'re open daily 11AM – 11PM 🍽️',
+        'menu':'Popular dishes at Vintage:\n\n🍗 Vintage Creamy Chicken ⭐\n🥩 Nattukozhi Soup\n🍛 Maharani Chicken\n🍚 Biryani\n\nShall I book a table?',
+        'timing':'⏰ The Vintage Hours:\n\n📅 *Every Day* (Mon–Sun)\n11:00 AM – 11:00 PM\n\n📞 +91 95002 45333',
+        'catering':'Catering Services:\n\n💰 Per plate (veg): *₹300 – ₹600*\n💰 Per plate (non-veg): *₹400 – ₹800*\n\nMinimum 50 guests.\n\nShall I connect you with our events team?',
+      },
+      waQRs:['📅 Book a Table','🎉 Party Hall','📋 View Menu','🍽️ Catering','⏰ Timings'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling The Vintage Restaurant & Party Hall! How can I help you?'},
+        {who:'caller',text:'Hi, I want to book the party hall for my son\'s birthday. 80 guests.'},
+        {who:'ai',text:'Wonderful! The Vintage party hall accommodates up to 200 guests. For 80 guests, hall rental starts from ₹20,000, and we can arrange full catering at ₹400–₹800 per plate. What date are you thinking?'},
+        {who:'caller',text:'Next Saturday.'},
+        {who:'ai',text:'Next Saturday is available! Let me note your details. May I have your name and number to confirm the booking with our events manager?'},
+        {who:'caller',text:'Ramesh, 98765 12345.'},
+        {who:'ai',text:'Perfect, Ramesh! I\'ve noted your booking — Next Saturday, 80 guests. Our events manager will call you within 2 hours to confirm all details. Thank you!'},
+      ],
+      services:[
+        {i:'🍽️',n:'Table Booking',p:'Free'},{i:'🎉',n:'Party Hall',p:'₹15,000–₹50,000'},
+        {i:'🍗',n:'Non-Veg Catering',p:'₹400–₹800/plate'},{i:'🥗',n:'Veg Catering',p:'₹300–₹600/plate'},
+        {i:'🎂',n:'Birthday Package',p:'₹10,000–₹30,000'},{i:'💒',n:'Wedding Reception',p:'Custom Quote'},
+        {i:'🏢',n:'Corporate Event',p:'₹20,000+'},{i:'☕',n:'Hi-Tea Package',p:'₹200/person'},
+      ],
+      svcLabel:'🎉 Services & Packages',
+      dash:[{v:'55',l:'WhatsApp Msgs Today',c:'↑ 14 from yesterday'},{v:'22',l:'Calls Handled by AI',c:'↑ 7 from yesterday'},{v:'8',l:'Bookings Confirmed',c:'↑ 3 from yesterday'}],
+      activity:[
+        {dot:'📞',bg:'rgba(127,29,29,0.1)',title:'Call — Birthday Hall Booking',sub:'Ramesh booked Saturday, 80 guests',time:'5m ago'},
+        {dot:'💬',bg:'rgba(127,29,29,0.1)',title:'WhatsApp — Table Reservation',sub:'Family of 8 booked tonight 7:30PM',time:'22m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'Catering Enquiry — 150 guests',sub:'AI captured lead, events team notified',time:'1h ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'Call at 11:20 PM — After Hours',sub:'AI captured wedding enquiry for callback',time:'8h ago'},
+      ],
+    },
+    {
+      id:'tgi', icon:'🏨', color:'#1e3a5f', name:'TGI Grand Fortuna Hotel',
+      type:'3-Star Hotel · Restaurant · Banquet', rating:'⭐ 4.2 (4,535 reviews)', phone:'+91 4344 667 600',
+      hours:'24 Hours · 7 Days', addr:'Seetharam Nagar, Sanasandiram, Hosur',
+      tagline:'Grand Hospitality. Seamless AI Service.',
+      heroGrad:'linear-gradient(135deg,#00091a,#001530)',
+      badge:'🏨 Hosur\'s Premier Business Hotel',
+      heroTitle:'A Hotel That Never Sleeps — Neither Does Your AI',
+      heroDesc:'Room enquiries, restaurant bookings, event halls — all handled automatically.',
+      stats:[{v:'4,535',l:'Google Reviews'},{v:'24/7',l:'AI Active'},{v:'0',l:'Missed Calls'}],
+      waWelcome:'🏨 Welcome to *TGI Grand Fortuna Hotel*, Hosur!\n\nGrand hospitality, always. How can I help?\n\n• 🛏️ Room booking\n• 🍽️ Restaurant reservation\n• 🎉 Banquet / Event hall\n• ⏰ Check-in info',
+      waReplies:{
+        'room':'🛏️ Room Booking at TGI Grand Fortuna:\n\n💰 Deluxe Room: *₹2,500 – ₹3,500/night*\n💰 Suite: *₹4,500 – ₹7,000/night*\n\nIncludes breakfast, WiFi & parking.\n\nWhich dates would you like to check availability for?',
+        'banquet':'🎉 Banquet at TGI Grand Fortuna:\n\n👥 Capacity: Up to 300 guests\n💰 Hall Rental: *₹25,000 – ₹80,000*\n🍽️ Catering packages available\n\nIdeal for weddings, receptions & corporate events.\n\nShall I check availability?',
+        'restaurant':'🍽️ Restaurant at TGI:\n\nOur in-house restaurant serves Indian, Chinese & Continental cuisine.\n\n💰 Buffet: *₹350 – ₹600/person*\n\nOpen for breakfast, lunch & dinner. Shall I book a table?',
+        'timing':'⏰ TGI Grand Fortuna:\n\n🏨 *Hotel:* Open 24 Hours\n🍽️ *Restaurant:* 7AM – 11PM\n🎉 *Banquet:* By Appointment\n\n📞 +91 4344 667 600',
+        'checkin':'Check-in & Check-out:\n\n✅ Check-in: 12:00 PM\n✅ Check-out: 11:00 AM\n\nEarly check-in available on request.\n\nWould you like to book a room?',
+      },
+      waQRs:['🛏️ Book a Room','🎉 Banquet Hall','🍽️ Restaurant','⏰ Check-in Info','💰 Room Prices'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling TGI Grand Fortuna Hotel, Hosur! How may I assist you?'},
+        {who:'caller',text:'I need a room for 2 nights from Friday. What\'s available?'},
+        {who:'ai',text:'We have deluxe rooms available from ₹2,500 per night, including breakfast and WiFi. For 2 nights that would be ₹5,000 to ₹7,000 depending on room type. Shall I check availability for Friday?'},
+        {who:'caller',text:'Yes, for one person.'},
+        {who:'ai',text:'I have a Deluxe Room available at ₹2,500 per night. Total for 2 nights: ₹5,000. Shall I hold this room for you? May I have your name?'},
+        {who:'caller',text:'Sanjay.'},
+        {who:'ai',text:'Room held for you, Sanjay! 2 nights from Friday — Deluxe Room at ₹2,500/night. Our front desk will call you to confirm payment. Thank you for choosing TGI Grand Fortuna!'},
+      ],
+      services:[
+        {i:'🛏️',n:'Deluxe Room',p:'₹2,500–₹3,500/night'},{i:'👑',n:'Suite',p:'₹4,500–₹7,000/night'},
+        {i:'🍽️',n:'Buffet Dining',p:'₹350–₹600/person'},{i:'🎉',n:'Banquet Hall',p:'₹25,000–₹80,000'},
+        {i:'💒',n:'Wedding Package',p:'Custom Quote'},{i:'🏢',n:'Corporate Meet',p:'₹15,000+'},
+        {i:'🏊',n:'Pool Access',p:'Complimentary'},{i:'🅿️',n:'Parking',p:'Free'},
+      ],
+      svcLabel:'🏨 Services & Pricing',
+      dash:[{v:'73',l:'WhatsApp Msgs Today',c:'↑ 18 from yesterday'},{v:'34',l:'Calls Handled by AI',c:'↑ 9 from yesterday'},{v:'12',l:'Bookings Confirmed',c:'↑ 4 from yesterday'}],
+      activity:[
+        {dot:'📞',bg:'rgba(30,58,95,0.1)',title:'Call — Room Booking',sub:'Sanjay booked 2 nights from Friday',time:'2m ago'},
+        {dot:'💬',bg:'rgba(30,58,95,0.1)',title:'WhatsApp — Banquet Enquiry',sub:'Wedding for 200 guests — events team alerted',time:'18m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'Restaurant — 4 Tables Reserved',sub:'AI confirmed all bookings for tonight',time:'45m ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'3AM Call — Late Night Check-in',sub:'AI assisted guest with room info',time:'6h ago'},
+      ],
+    },
+    {
+      id:'hotelhills', icon:'🌄', color:'#065f46', name:'Hotel Hills Hosur',
+      type:'Hotel · Restaurant · Event Venue', rating:'⭐ 4.3 (2,845 reviews)', phone:'+91 86677 92200',
+      hours:'24 Hours · 7 Days', addr:'SIPCOT Industrial Complex Phase I, Mookondapalli, Hosur',
+      tagline:'Scenic Stays. Warm Hospitality. AI-Powered.',
+      heroGrad:'linear-gradient(135deg,#001a0f,#002a18)',
+      badge:'🌄 Hosur\'s Scenic Hotel Destination',
+      heroTitle:'Every Guest Deserves an Instant Response',
+      heroDesc:'Hotel Hills gets calls around the clock. Your AI never puts anyone on hold.',
+      stats:[{v:'2,845',l:'Google Reviews'},{v:'24/7',l:'AI + Hotel'},{v:'0',l:'Unanswered Calls'}],
+      waWelcome:'🌄 Welcome to *Hotel Hills, Hosur*!\n\nScenic stays, warm hospitality. How can I help?\n\n• 🛏️ Book a room\n• 🍽️ Restaurant\n• 🎉 Events & banquets\n• ⏰ Check-in details',
+      waReplies:{
+        'room':'🛏️ Rooms at Hotel Hills:\n\n💰 Standard Room: *₹2,000 – ₹3,000/night*\n💰 Deluxe Room: *₹3,000 – ₹4,500/night*\n💰 Family Suite: *₹5,000 – ₹8,000/night*\n\nAll rooms include breakfast & scenic views!\n\nWhat dates would you like?',
+        'birthday':'🎂 Birthday Celebrations at Hotel Hills:\n\n✅ Private banquet setup\n✅ Catering packages\n✅ Cake & decoration arrangements\n💰 Packages from *₹15,000*\n\nShall I check availability?',
+        'restaurant':'🍽️ Restaurant at Hotel Hills:\n\nCopper Bowl Dining — serving Indian, Chinese & Continental.\n\n💰 Lunch/Dinner: *₹300 – ₹600/person*\n\nShall I book a table for you?',
+        'timing':'⏰ Hotel Hills:\n\n🏨 *Hotel:* Open 24 Hours\n🍽️ *Restaurant:* 7AM – 10:30PM\n\n📞 +91 86677 92200',
+        'event':'Events at Hotel Hills:\n\n🎉 Birthday parties, corporate meetings & celebrations\n\n👥 Capacity: Up to 150 guests\n💰 Starting from *₹15,000*\n\nShall I connect with our events team?',
+      },
+      waQRs:['🛏️ Book a Room','🎂 Birthday Event','🍽️ Restaurant Table','⏰ Check-in Info','💰 Room Prices'],
+      callScript:[
+        {who:'ai',text:'Thank you for calling Hotel Hills, Hosur! How may I assist you?'},
+        {who:'caller',text:'Hi, I want to celebrate my baby\'s first birthday at your hotel. Can you help?'},
+        {who:'ai',text:'How wonderful — congratulations! Hotel Hills is a perfect venue. We can arrange a private banquet for up to 150 guests with catering, cake, and decorations. Birthday packages start from ₹15,000. What date were you thinking?'},
+        {who:'caller',text:'The 10th of next month, about 60 people.'},
+        {who:'ai',text:'That date looks available! For 60 guests, we can put together a lovely package. Let me take your name and number so our events team can call you with a detailed quote.'},
+        {who:'caller',text:'Faiyaz, 99001 23456.'},
+        {who:'ai',text:'Got it, Faiyaz! Our events team will call you today to finalise the birthday package for the 10th. Thank you for choosing Hotel Hills — we\'ll make it a beautiful celebration! 🎂'},
+      ],
+      services:[
+        {i:'🛏️',n:'Standard Room',p:'₹2,000–₹3,000/night'},{i:'👑',n:'Deluxe Room',p:'₹3,000–₹4,500/night'},
+        {i:'🏡',n:'Family Suite',p:'₹5,000–₹8,000/night'},{i:'🎂',n:'Birthday Package',p:'₹15,000+'},
+        {i:'🍽️',n:'Copper Bowl Dining',p:'₹300–₹600/person'},{i:'🎉',n:'Corporate Meet',p:'₹10,000+'},
+        {i:'🐟',n:'Koi Pond Garden',p:'Complimentary'},{i:'🅿️',n:'Parking',p:'Free'},
+      ],
+      svcLabel:'🏨 Services & Pricing',
+      dash:[{v:'48',l:'WhatsApp Msgs Today',c:'↑ 11 from yesterday'},{v:'21',l:'Calls Handled by AI',c:'↑ 5 from yesterday'},{v:'9',l:'Bookings Confirmed',c:'↑ 3 from yesterday'}],
+      activity:[
+        {dot:'📞',bg:'rgba(6,95,70,0.1)',title:'Call — Birthday Event Booking',sub:'Faiyaz booking for 60 guests, 10th next month',time:'3m ago'},
+        {dot:'💬',bg:'rgba(6,95,70,0.1)',title:'WhatsApp — Room Booking',sub:'Family suite booked for weekend',time:'25m ago'},
+        {dot:'🗓️',bg:'rgba(224,168,71,0.1)',title:'Restaurant — 6 Tables Tonight',sub:'All reservations confirmed by AI',time:'1h ago'},
+        {dot:'📞',bg:'rgba(99,179,237,0.1)',title:'2AM Check-in Assistance',sub:'Guest guided by AI for late arrival',time:'5h ago'},
+      ],
+    },
+  ],
+};
+
+// ══════════════════════════════════════════
+//  RENDER SELECTOR
+// ══════════════════════════════════════════
+function renderSelector() {
+  ['dental','salon','resto'].forEach(cat => {
+    const grid = document.getElementById('grid-'+cat);
+    businesses[cat].forEach(b => {
+      const card = document.createElement('div');
+      card.className = 'biz-card';
+      card.onclick = () => launchDemo(b);
+      card.innerHTML = `
+        <div class="biz-icon">${b.icon}</div>
+        <div class="biz-name">${b.name}</div>
+        <div class="biz-type">${b.type}</div>
+        <div class="biz-rating">${b.rating}</div>
+        <div class="biz-arrow">→</div>`;
+      grid.appendChild(card);
+    });
+  });
+}
+
+// ══════════════════════════════════════════
+//  LAUNCH DEMO
+// ══════════════════════════════════════════
+let currentBiz = null;
+let callActive = false, callTimer = null;
+
+function launchDemo(b) {
+  currentBiz = b;
+  document.getElementById('selector').style.display = 'none';
+  document.getElementById('demo').style.display = 'flex';
+
+  // Topbar
+  document.getElementById('tb-icon').style.background = b.color;
+  document.getElementById('tb-icon').textContent = b.icon;
+  document.getElementById('tb-name').textContent = b.name;
+  document.getElementById('tb-sub').textContent = b.tagline;
+
+  // Hero
+  const hero = document.getElementById('demo-hero');
+  hero.style.background = b.heroGrad;
+  hero.style.setProperty('--accent-color', b.color);
+  document.getElementById('demo-badge').textContent = b.badge;
+  document.getElementById('demo-title').textContent = b.heroTitle;
+  document.getElementById('demo-desc').textContent = b.heroDesc;
+  document.getElementById('stat1-val').textContent = b.stats[0].v;
+  document.getElementById('stat1-lbl').textContent = b.stats[0].l;
+  document.getElementById('stat2-val').textContent = b.stats[1].v;
+  document.getElementById('stat2-lbl').textContent = b.stats[1].l;
+  document.getElementById('stat3-val').textContent = b.stats[2].v;
+  document.getElementById('stat3-lbl').textContent = b.stats[2].l;
+
+  // Info
+  document.getElementById('info-phone').textContent = b.phone;
+  document.getElementById('info-hours').textContent = b.hours;
+  document.getElementById('info-addr').textContent = b.addr;
+
+  // WhatsApp
+  document.getElementById('wa-av').textContent = b.icon;
+  document.getElementById('wa-nm').textContent = b.name;
+  const chat = document.getElementById('wa-chat');
+  chat.innerHTML = '';
+  addWAMsg('bot', b.waWelcome, '9:30 AM');
+  const qrs = document.getElementById('wa-qrs');
+  qrs.innerHTML = '';
+  b.waQRs.forEach(q => {
+    const btn = document.createElement('button');
+    btn.className = 'wa-qr';
+    btn.textContent = q;
+    btn.onclick = () => { document.getElementById('wa-input').value = q; sendWA(); };
+    qrs.appendChild(btn);
+  });
+
+  // Services
+  document.getElementById('svc-page-title').textContent = b.svcLabel;
+  const svcGrid = document.getElementById('svc-grid');
+  svcGrid.innerHTML = '';
+  b.services.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'svc';
+    el.innerHTML = `<div class="svc-i">${s.i}</div><div class="svc-n">${s.n}</div><div class="svc-p">${s.p}</div>`;
+    svcGrid.appendChild(el);
+  });
+
+  // Dashboard
+  document.getElementById('d1').textContent = b.dash[0].v;
+  document.getElementById('d1l').textContent = b.dash[0].l;
+  document.getElementById('d1c').textContent = b.dash[0].c;
+  document.getElementById('d2').textContent = b.dash[1].v;
+  document.getElementById('d2l').textContent = b.dash[1].l;
+  document.getElementById('d2c').textContent = b.dash[1].c;
+  document.getElementById('d3').textContent = b.dash[2].v;
+  document.getElementById('d3l').textContent = b.dash[2].l;
+  document.getElementById('d3c').textContent = b.dash[2].c;
+  const feed = document.getElementById('activity-feed');
+  feed.innerHTML = '';
+  b.activity.forEach(a => {
+    const el = document.createElement('div');
+    el.className = 'af';
+    el.innerHTML = `<div class="af-dot" style="background:${a.bg}">${a.dot}</div><div class="af-info"><h4>${a.title}</h4><p>${a.sub}</p></div><div class="af-time">${a.time}</div>`;
+    feed.appendChild(el);
+  });
+
+  // Reset voice
+  endCall(true);
+  switchTab('home');
+}
+
+function backToSelector() {
+  endCall(true);
+  document.getElementById('demo').style.display = 'none';
+  document.getElementById('selector').style.display = 'flex';
+}
+
+// ── TABS ──
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  const bt = document.getElementById('tab-'+tab);
+  if(bt) bt.classList.add('active');
+}
+
+// ── WHATSAPP ──
+function addWAMsg(who, text, time) {
+  const chat = document.getElementById('wa-chat');
+  const d = document.createElement('div');
+  d.className = 'wa-msg '+who;
+  d.innerHTML = `<div class="wa-bub">${text.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<b>$1</b>')}</div><div class="wa-time">${time} ${who==='user'?'✓✓':''}</div>`;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function sendWA() {
+  const input = document.getElementById('wa-input');
+  const msg = input.value.trim();
+  if(!msg || !currentBiz) return;
+  input.value = '';
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  addWAMsg('user', msg, now);
+
+  const chat = document.getElementById('wa-chat');
+  const typing = document.createElement('div');
+  typing.className = 'wa-msg bot';
+  typing.innerHTML = '<div class="wa-typing"><span></span><span></span><span></span></div>';
+  chat.appendChild(typing);
+  chat.scrollTop = chat.scrollHeight;
+
+  setTimeout(() => {
+    typing.remove();
+    const key = msg.toLowerCase().replace(/[?!]/g,'').trim();
+    let reply = currentBiz.waWelcome;
+    let found = false;
+    for(const k of Object.keys(currentBiz.waReplies)) {
+      if(key.includes(k)) { reply = currentBiz.waReplies[k]; found = true; break; }
+    }
+    if(!found) reply = `Thanks for your message! Our team at *${currentBiz.name}* will assist you right away.\n\n📞 ${currentBiz.phone}`;
+    addWAMsg('bot', reply, now);
+  }, 1300);
+}
+
+// ── VOICE ──
+function toggleCall() {
+  if(!callActive) startCall(); else endCall(false);
+}
+
+function startCall() {
+  if(!currentBiz) return;
+  callActive = true;
+  const ring = document.getElementById('v-ring');
+  const inner = document.getElementById('v-inner');
+  ring.classList.add('ringing');
+  document.getElementById('v-status').textContent = 'Incoming Call...';
+  document.getElementById('v-sub').textContent = 'AI is answering...';
+  document.getElementById('v-btn').textContent = '🔴 End Call';
+  document.getElementById('v-btn').className = 'v-btn end';
+  const box = document.getElementById('transcript');
+  box.style.display = 'block';
+  document.getElementById('tr-lines').innerHTML = '';
+
+  let i = 0;
+  function next() {
+    if(i >= currentBiz.callScript.length || !callActive) return;
+    if(i===0){ring.classList.remove('ringing');ring.classList.add('active');inner.textContent='🎙️';document.getElementById('v-status').textContent='AI Receptionist Active';}
+    const line = currentBiz.callScript[i];
+    const el = document.createElement('div');
+    el.className = 'tr-line';
+    el.innerHTML = `<span class="tr-who ${line.who}">${line.who==='ai'?'AI':'Caller'}</span><span class="tr-text">${line.text}</span>`;
+    document.getElementById('tr-lines').appendChild(el);
+    document.getElementById('tr-lines').scrollTop = 9999;
+    i++;
+    callTimer = setTimeout(next, line.who==='ai' ? 2800 : 1800);
+  }
+  setTimeout(next, 700);
+}
+
+function endCall(silent) {
+  callActive = false;
+  clearTimeout(callTimer);
+  const ring = document.getElementById('v-ring');
+  const inner = document.getElementById('v-inner');
+  ring.classList.remove('ringing','active');
+  inner.textContent = '📞';
+  document.getElementById('v-status').textContent = 'Tap to Simulate a Call';
+  document.getElementById('v-sub').textContent = 'The AI answers every call like a trained receptionist — even at 2am';
+  document.getElementById('v-btn').textContent = '📞 Simulate Incoming Call';
+  document.getElementById('v-btn').className = 'v-btn';
+  if(!silent) showToast('✅ Appointment booked automatically by AI!');
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+renderSelector();
+</script>
+</body>
+</html>

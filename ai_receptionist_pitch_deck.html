@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Receptionist – Pitch Deck</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0a0a0f; color: #fff; overflow: hidden; }
+  .deck { width: 100vw; height: 100vh; position: relative; }
+  .slide { display: none; width: 100%; height: 100%; padding: 60px 80px; flex-direction: column; justify-content: center; animation: fadeIn 0.4s ease; }
+  .slide.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Navigation */
+  .nav { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; align-items: center; z-index: 100; }
+  .nav button { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 10px 28px; border-radius: 100px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+  .nav button:hover { background: rgba(255,255,255,0.18); }
+  .nav .counter { color: rgba(255,255,255,0.4); font-size: 13px; min-width: 50px; text-align: center; }
+
+  /* Slide 1 – Hero */
+  .slide-1 { background: linear-gradient(135deg, #0a0a0f 0%, #0d1a2e 100%); align-items: center; text-align: center; }
+  .slide-1 .tag { background: linear-gradient(90deg, #7c3aed, #2563eb); padding: 6px 18px; border-radius: 100px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; display: inline-block; margin-bottom: 28px; }
+  .slide-1 h1 { font-size: clamp(36px, 5vw, 68px); font-weight: 800; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(135deg, #fff 40%, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .slide-1 p { font-size: 18px; color: rgba(255,255,255,0.5); max-width: 600px; line-height: 1.7; }
+  .slide-1 .glow { position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+
+  /* Slide 2 – Problem */
+  .slide-2 { background: #0c0c18; }
+  .slide-2 h2 { font-size: 42px; font-weight: 800; margin-bottom: 14px; }
+  .slide-2 .sub { color: rgba(255,255,255,0.4); margin-bottom: 50px; font-size: 16px; }
+  .problems { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .prob-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 28px 24px; }
+  .prob-card .icon { font-size: 32px; margin-bottom: 16px; }
+  .prob-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; color: #f87171; }
+  .prob-card p { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+  /* Slide 3 – Solution */
+  .slide-3 { background: linear-gradient(135deg, #0a0f1e, #0e0a1e); }
+  .slide-3 h2 { font-size: 42px; font-weight: 800; margin-bottom: 14px; }
+  .slide-3 .sub { color: rgba(255,255,255,0.4); margin-bottom: 50px; font-size: 16px; }
+  .chat-demo { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; max-width: 520px; }
+  .chat-demo .msg { margin-bottom: 14px; display: flex; gap: 10px; }
+  .chat-demo .msg.user { flex-direction: row-reverse; }
+  .chat-demo .bubble { padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.5; max-width: 80%; }
+  .chat-demo .msg.ai .bubble { background: rgba(124,58,237,0.3); border: 1px solid rgba(124,58,237,0.4); }
+  .chat-demo .msg.user .bubble { background: rgba(37,99,235,0.3); border: 1px solid rgba(37,99,235,0.4); }
+  .chat-demo .label { font-size: 11px; color: rgba(255,255,255,0.3); margin-bottom: 4px; }
+  .sol-layout { display: flex; gap: 50px; align-items: center; }
+  .sol-points { flex: 1; }
+  .sol-point { display: flex; gap: 14px; margin-bottom: 22px; align-items: flex-start; }
+  .sol-point .dot { width: 10px; height: 10px; border-radius: 50%; background: #7c3aed; margin-top: 6px; flex-shrink: 0; }
+  .sol-point p { font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+  .sol-point strong { color: #fff; }
+
+  /* Slide 4 – Markets */
+  .slide-4 { background: #080c14; }
+  .slide-4 h2 { font-size: 42px; font-weight: 800; margin-bottom: 14px; }
+  .slide-4 .sub { color: rgba(255,255,255,0.4); margin-bottom: 40px; font-size: 16px; }
+  .markets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .market-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 22px 18px; transition: all 0.2s; cursor: default; }
+  .market-card:hover { border-color: rgba(124,58,237,0.5); background: rgba(124,58,237,0.08); transform: translateY(-3px); }
+  .market-card .icon { font-size: 26px; margin-bottom: 12px; }
+  .market-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .market-card p { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.5; }
+
+  /* Slide 5 – Pricing */
+  .slide-5 { background: linear-gradient(135deg, #0a0a0f, #080c14); }
+  .slide-5 h2 { font-size: 42px; font-weight: 800; margin-bottom: 14px; }
+  .slide-5 .sub { color: rgba(255,255,255,0.4); margin-bottom: 50px; font-size: 16px; }
+  .plans { display: flex; gap: 24px; }
+  .plan { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 36px 28px; position: relative; }
+  .plan.featured { border-color: rgba(124,58,237,0.6); background: rgba(124,58,237,0.1); }
+  .plan .badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, #7c3aed, #2563eb); padding: 4px 16px; border-radius: 100px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .plan h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .plan .price { font-size: 40px; font-weight: 800; margin-bottom: 4px; }
+  .plan .price span { font-size: 14px; font-weight: 400; color: rgba(255,255,255,0.4); }
+  .plan .desc { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 24px; }
+  .plan ul { list-style: none; }
+  .plan ul li { font-size: 13px; color: rgba(255,255,255,0.65); margin-bottom: 10px; padding-left: 20px; position: relative; }
+  .plan ul li::before { content: '✓'; position: absolute; left: 0; color: #7c3aed; font-weight: 700; }
+
+  /* Slide 6 – Hosur Targets */
+  .slide-6 { background: #080c14; }
+  .slide-6 h2 { font-size: 42px; font-weight: 800; margin-bottom: 14px; }
+  .slide-6 .sub { color: rgba(255,255,255,0.4); margin-bottom: 40px; font-size: 16px; }
+  .targets { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .target-row { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px 22px; display: flex; align-items: center; gap: 16px; }
+  .target-row .stars { font-size: 12px; color: #fbbf24; }
+  .target-row .tname { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .target-row .tdetail { font-size: 12px; color: rgba(255,255,255,0.4); }
+  .target-row .type { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+  .type.salon { background: rgba(236,72,153,0.2); color: #f472b6; border: 1px solid rgba(236,72,153,0.3); }
+  .type.dental { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .type.gym { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+  .target-row .phone { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+
+  /* Slide 7 – CTA */
+  .slide-7 { background: linear-gradient(135deg, #0d0a1e, #0a0f1e); align-items: center; text-align: center; }
+  .slide-7 h2 { font-size: clamp(32px, 4vw, 60px); font-weight: 800; margin-bottom: 20px; background: linear-gradient(135deg, #fff, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .slide-7 p { font-size: 18px; color: rgba(255,255,255,0.5); max-width: 600px; line-height: 1.7; margin-bottom: 50px; }
+  .steps { display: flex; gap: 0; margin-bottom: 60px; }
+  .step { flex: 1; padding: 0 20px; position: relative; text-align: center; }
+  .step:not(:last-child)::after { content: '→'; position: absolute; right: -10px; top: 20px; color: rgba(255,255,255,0.2); font-size: 20px; }
+  .step .num { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #2563eb); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; margin: 0 auto 14px; }
+  .step h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .step p { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+  /* Slide number indicator */
+  .slide-indicator { position: fixed; top: 24px; right: 30px; font-size: 12px; color: rgba(255,255,255,0.25); }
+  .slide-title-bar { position: fixed; top: 24px; left: 30px; font-size: 12px; color: rgba(255,255,255,0.25); letter-spacing: 1px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- Slide 1: Hero -->
+  <div class="slide slide-1 active">
+    <div class="glow"></div>
+    <div class="tag">AI × Local Business</div>
+    <h1>Your Business,<br/>Always Answering.</h1>
+    <p>An AI receptionist that handles bookings, pricing, schedules & FAQs — 24/7 on WhatsApp. Built for salons, clinics, gyms & more.</p>
+  </div>
+
+  <!-- Slide 2: Problem -->
+  <div class="slide slide-2">
+    <h2>The Problem is Real 📵</h2>
+    <p class="sub">Every local business owner faces this every single day</p>
+    <div class="problems">
+      <div class="prob-card">
+        <div class="icon">📱</div>
+        <h3>Missed Messages</h3>
+        <p>WhatsApp flooded with "what's your price for haircut?" messages while the owner is busy with a client.</p>
+      </div>
+      <div class="prob-card">
+        <div class="icon">🕐</div>
+        <h3>After-Hours Queries</h3>
+        <p>Customers ask questions at 10pm. No reply = lost booking. Human staff can't work 24/7.</p>
+      </div>
+      <div class="prob-card">
+        <div class="icon">🔁</div>
+        <h3>Repetitive Questions</h3>
+        <p>"What time do you open?" "Do you have slots on Sunday?" Same questions, 20 times a day.</p>
+      </div>
+      <div class="prob-card">
+        <div class="icon">💸</div>
+        <h3>Receptionist Cost</h3>
+        <p>Hiring a full-time receptionist costs ₹8,000–15,000/month. Too expensive for small businesses.</p>
+      </div>
+      <div class="prob-card">
+        <div class="icon">😤</div>
+        <h3>Owner Overload</h3>
+        <p>The owner doubles as stylist + receptionist + manager. Something always falls through the cracks.</p>
+      </div>
+      <div class="prob-card">
+        <div class="icon">📉</div>
+        <h3>Lost Revenue</h3>
+        <p>Unanswered queries at the wrong time = customer books at the competitor down the road.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: Solution -->
+  <div class="slide slide-3">
+    <h2>The Solution 🤖</h2>
+    <p class="sub">An AI that lives on your WhatsApp and never sleeps</p>
+    <div class="sol-layout">
+      <div class="sol-points">
+        <div class="sol-point"><div class="dot"></div><p><strong>Instant Answers:</strong> Pricing, services, timings — answered in seconds, any time.</p></div>
+        <div class="sol-point"><div class="dot"></div><p><strong>Appointment Booking:</strong> Checks availability, confirms slots, sends reminders.</p></div>
+        <div class="sol-point"><div class="dot"></div><p><strong>WhatsApp Native:</strong> No app to download. Works where your customers already are.</p></div>
+        <div class="sol-point"><div class="dot"></div><p><strong>Setup in 24hrs:</strong> You share your service list & timings — we plug it in. Done.</p></div>
+        <div class="sol-point"><div class="dot"></div><p><strong>Handles 100 conversations simultaneously</strong> — one human can't.</p></div>
+      </div>
+      <div class="chat-demo">
+        <div class="msg user"><div><div class="label">Customer</div><div class="bubble">Hi, how much is a full haircut with wash?</div></div></div>
+        <div class="msg ai"><div><div class="label">AI Receptionist</div><div class="bubble">Hi! 👋 A haircut with wash is ₹350. We also have a haircut + styling combo for ₹500. Want to book a slot?</div></div></div>
+        <div class="msg user"><div><div class="label">Customer</div><div class="bubble">Yes, Saturday 4pm please</div></div></div>
+        <div class="msg ai"><div><div class="label">AI Receptionist</div><div class="bubble">✅ Done! Saturday 23rd April at 4:00 PM is confirmed. We'll remind you an hour before. See you! 🙌</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Markets -->
+  <div class="slide slide-4">
+    <h2>Works Everywhere 🏪</h2>
+    <p class="sub">One product. Infinite verticals. Every local service business needs this.</p>
+    <div class="markets">
+      <div class="market-card"><div class="icon">✂️</div><h3>Salons & Spas</h3><p>Services, pricing, stylist availability, booking</p></div>
+      <div class="market-card"><div class="icon">🦷</div><h3>Dental Clinics</h3><p>Doctor timings, treatment costs, appointment slots</p></div>
+      <div class="market-card"><div class="icon">🏋️</div><h3>Gyms & Studios</h3><p>Membership plans, class schedules, trial bookings</p></div>
+      <div class="market-card"><div class="icon">🍽️</div><h3>Restaurants</h3><p>Table reservations, menu queries, delivery info</p></div>
+      <div class="market-card"><div class="icon">📸</div><h3>Photo Studios</h3><p>Package pricing, date availability, shoot types</p></div>
+      <div class="market-card"><div class="icon">🐾</div><h3>Pet Grooming</h3><p>Appointment booking, services, breed-specific pricing</p></div>
+      <div class="market-card"><div class="icon">🎓</div><h3>Coaching Centers</h3><p>Batch timings, fee structure, demo class booking</p></div>
+      <div class="market-card"><div class="icon">🔧</div><h3>Auto Service</h3><p>Service slots, job card status, service menu</p></div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Pricing -->
+  <div class="slide slide-5">
+    <h2>Simple Pricing 💰</h2>
+    <p class="sub">Charge clients a monthly fee. Your costs stay near zero.</p>
+    <div class="plans">
+      <div class="plan">
+        <h3>Starter</h3>
+        <div class="price">₹1,499<span>/mo</span></div>
+        <div class="desc">For small shops just starting out</div>
+        <ul>
+          <li>WhatsApp AI bot</li>
+          <li>FAQ automation (pricing, timings)</li>
+          <li>Up to 200 conversations/month</li>
+          <li>Basic setup included</li>
+        </ul>
+      </div>
+      <div class="plan featured">
+        <div class="badge">⭐ Most Popular</div>
+        <h3>Pro</h3>
+        <div class="price">₹2,999<span>/mo</span></div>
+        <div class="desc">For active salons, clinics & gyms</div>
+        <ul>
+          <li>Everything in Starter</li>
+          <li>Appointment booking & reminders</li>
+          <li>Unlimited conversations</li>
+          <li>Google Calendar sync</li>
+          <li>Monthly performance report</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <h3>Business</h3>
+        <div class="price">₹5,999<span>/mo</span></div>
+        <div class="desc">For multi-service or multi-location</div>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Multiple staff/service categories</li>
+          <li>Custom branding & tone</li>
+          <li>Priority support</li>
+          <li>Monthly strategy call</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6: Hosur Targets -->
+  <div class="slide slide-6">
+    <h2>Start Here — Hosur 📍</h2>
+    <p class="sub">Real businesses near you, right now. All high-rated, high-footfall, perfect first clients.</p>
+    <div class="targets">
+      <div class="target-row">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="type salon">Salon</span>
+            <span class="stars">⭐ 4.9</span>
+          </div>
+          <div class="tname">Vanity Unisex Salon</div>
+          <div class="tdetail">2,100+ reviews · High footfall · No booking system</div>
+          <div class="phone">📞 +91 81228 62911</div>
+        </div>
+      </div>
+      <div class="target-row">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="type salon">Salon</span>
+            <span class="stars">⭐ 4.9</span>
+          </div>
+          <div class="tname">Spin Unisex Salon</div>
+          <div class="tdetail">Receptionist mentioned in reviews — perfect AI pitch!</div>
+          <div class="phone">📞 +91 90710 83131</div>
+        </div>
+      </div>
+      <div class="target-row">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="type salon">Salon</span>
+            <span class="stars">⭐ 4.9</span>
+          </div>
+          <div class="tname">Studio 77 Signature Lounge</div>
+          <div class="tdetail">Premium salon · Has website · Tech open-minded owner</div>
+          <div class="phone">📞 +91 96777 81459</div>
+        </div>
+      </div>
+      <div class="target-row">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="type dental">Dental</span>
+            <span class="stars">⭐ 4.9</span>
+          </div>
+          <div class="tname">Narayani Dental Clinic</div>
+          <div class="tdetail">3 doctors · 1720+ reviews · Appointment chaos daily!</div>
+          <div class="phone">📞 +91 99443 68922</div>
+        </div>
+      </div>
+      <div class="target-row">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="type dental">Dental</span>
+            <span class="stars">⭐ 5.0</span>
+          </div>
+          <div class="tname">PEARLLINE Dentocare</div>
+          <div class="tdetail">Already uses "Smart AI Digital Dentistry" in name — very open!</div>
+          <div class="phone">📞 +91 80102 01080</div>
+        </div>
+      </div>
+      <div class="target-row">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="type gym">Gym</span>
+            <span class="stars">⭐ 4.7</span>
+          </div>
+          <div class="tname">HN7 Fitness Arena</div>
+          <div class="tdetail">Active Instagram · 218 reviews · Tech-savvy owner</div>
+          <div class="phone">📞 +91 77088 77739</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7: CTA -->
+  <div class="slide slide-7">
+    <h2>Start This Week.</h2>
+    <p>You don't need investment. You don't need an office. You need 3 clients and a working demo — and you're a business.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h4>Build Demo</h4>
+        <p>2 days to create a working WhatsApp AI for a sample salon</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h4>First Visit</h4>
+        <p>Walk into Vanity Salon or Narayani Dental and show it live</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h4>First Client</h4>
+        <p>Offer 1 month free trial. Get feedback. Get testimonial.</p>
+      </div>
+      <div class="step">
+        <div class="num">4</div>
+        <h4>Scale</h4>
+        <p>5 clients = ₹15,000/mo. 20 clients = ₹60,000/mo. Grow city by city.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Controls -->
+<div class="slide-title-bar" id="slideLabel">Intro</div>
+<div class="slide-indicator" id="slideNum">1 / 7</div>
+<div class="nav">
+  <button onclick="changeSlide(-1)">← Prev</button>
+  <span class="counter" id="counter">1 / 7</span>
+  <button onclick="changeSlide(1)">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const labels = ['Intro','The Problem','The Solution','Target Markets','Pricing Model','Hosur Targets','Action Plan'];
+  let current = 0;
+
+  function changeSlide(dir) {
+    slides[current].classList.remove('active');
+    current = (current + dir + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    document.getElementById('counter').textContent = `${current+1} / ${slides.length}`;
+    document.getElementById('slideNum').textContent = `${current+1} / ${slides.length}`;
+    document.getElementById('slideLabel').textContent = labels[current];
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') changeSlide(1);
+    if (e.key === 'ArrowLeft') changeSlide(-1);
+  });
+</script>
+</body>
+</html>
